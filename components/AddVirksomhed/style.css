@@ -1,0 +1,10 @@
+.tlf-input {
+  & input {
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 0;
+    height: 100%;
+  }
+}

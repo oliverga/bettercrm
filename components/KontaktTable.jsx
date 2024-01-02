@@ -86,10 +86,6 @@ function DataTable(session) {
   }, [columnVisibility]);
 
   useEffect(() => {
-    console.log(session);
-  }, [session]);
-
-  useEffect(() => {
     console.log(virksomhedSearch);
   }, [virksomhedSearch]);
 
@@ -336,7 +332,7 @@ function DataTable(session) {
     <div className="w-full">
       <div className="flex justify-start mt-12 mb-4">
         <div className="flex gap-4">
-          <TooltipProvider>
+          {/* <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
                 <Button variant="outline" size="icon" asChild>
@@ -350,9 +346,9 @@ function DataTable(session) {
                 <p>Database Indstillinger</p>
               </TooltipContent>
             </Tooltip>
-          </TooltipProvider>
+          </TooltipProvider> */}
           <Input
-            placeholder="Søg i virksomheder..."
+            placeholder="Søg i kontaktpersoner..."
             value={
               table.getColumn("Navn")
                 ? table.getColumn("Navn").getFilterValue()
@@ -363,12 +359,12 @@ function DataTable(session) {
             }
             className="max-w-sm"
           />
-
+          {/* 
           <AddVirksomhed
             setData={setData}
             session={session}
             setRowSelection={setRowSelection}
-          />
+          /> */}
         </div>
         <DropdownMenu closeOnSelect={false} clas>
           <DropdownMenuTrigger asChild>
