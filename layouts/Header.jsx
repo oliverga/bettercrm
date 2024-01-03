@@ -20,9 +20,8 @@ function Header({ session }) {
   const router = useRouter();
   const signOutClient = async () => {
     await supabase.auth.signOut();
-    toast.success("Du er nu logget ud.");
+    toast.success("Du er nu logget ud");
     router.push("/");
-    location.reload();
   };
 
   return (
@@ -35,11 +34,16 @@ function Header({ session }) {
           </Avatar>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem>
+          <DropdownMenuItem asChild>
             <Link href="/indstillinger">Indstillinger</Link>
           </DropdownMenuItem>
           <DropdownMenuItem>Abonnement</DropdownMenuItem>
           <DropdownMenuSeparator />
+          <DropdownMenuLabel>
+            <p className="">
+              {session && session.user ? session.user.email : ""}
+            </p>
+          </DropdownMenuLabel>
           {session ? (
             <DropdownMenuItem asChild>
               <button

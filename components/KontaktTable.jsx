@@ -348,7 +348,7 @@ function DataTable(session) {
             </Tooltip>
           </TooltipProvider> */}
           <Input
-            placeholder="Søg i kontaktpersoner..."
+            placeholder="Søg i personer..."
             value={
               table.getColumn("Navn")
                 ? table.getColumn("Navn").getFilterValue()

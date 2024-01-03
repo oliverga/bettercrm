@@ -19,10 +19,26 @@ import {
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import InputField from "./InputField";
+import {
+  IconCircle,
+  IconId,
+  IconMail,
+  IconPhone,
+  IconPlus,
+  IconTag,
+  IconLink,
+} from "@tabler/icons-react";
+import { Skeleton } from "./ui/skeleton";
 
 function VirksomhedInfo({ params, session }) {
   const supabase = createClientComponentClient();
-  const [data, setData] = useState(null);
+  const [virksomhed, setVirksomhed] = useState(null);
+  const [virksomhedData, setVirksomhedData] = useState(null);
+  const [activeInput, setActiveInput] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,48 +48,73 @@ function VirksomhedInfo({ params, session }) {
         .select("*")
         .eq("id", id);
       console.log(response.data);
-      setData(response.data[0]);
+      setVirksomhed(response.data[0]);
     };
     fetchData();
   }, [params, supabase]);
 
-  if (!data) {
+  if (!virksomhed) {
     return (
-      <div className="mt-12 flex flex-col md:flex-row gap-4 max-w-3xl mx-auto min-h-[160px]"></div>
+      <div className="mt-12 flex flex-col md:flex-row gap-4 mx-auto min-h-[112px]">
+        <Skeleton className="max-w-[80px] w-full h-[28px]" />
+      </div>
     );
   }
 
   return (
-    <section className="mt-12 flex flex-col md:flex-row gap-4 mx-auto min-h-[160px]">
-      <div className="flex flex-col gap-4 w-full ">
+    <section className="mt-12 flex flex-col md:flex-row gap-4 mx-auto">
+      <div className="flex flex-col gap-4 w-fit">
         <div>
-          <h1>{data.navn}</h1>
-          <div>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <div
-                    onClick={() => {
-                      navigator.clipboard.writeText(data.cvr.toString());
-                      toastMessage("CVR kopieret til udklipsholder");
-                    }}
-                    className="cursor-pointer"
-                  >
-                    {data.cvr}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Kopier til udklipsholder</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+          <h1 className="text-xl">{virksomhed.navn}</h1>
         </div>
-        <div className="">
-          <p>{data.hjemmeside}</p>
-          <p>{data.telefonnr}</p>
-          <p>{data.email}</p>
+        <div className="flex flex-wrap gap-1 max-w-xs">
+          <InputField
+            activeInput={activeInput}
+            setActiveInput={setActiveInput}
+            inputKey="cvr"
+            virksomhed={virksomhed}
+            setVirksomhed={setVirksomhed}
+            IconComponent={IconId}
+            placeholder="CVR"
+            autoFocus={true}
+          />
+          <InputField
+            activeInput={activeInput}
+            setActiveInput={setActiveInput}
+            inputKey="hjemmeside"
+            virksomhed={virksomhed}
+            setVirksomhed={setVirksomhed}
+            IconComponent={IconLink}
+            placeholder="Hjemmeside"
+            autoFocus={true}
+          />
+          <InputField
+            activeInput={activeInput}
+            setActiveInput={setActiveInput}
+            inputKey="telefonnr"
+            virksomhed={virksomhed}
+            setVirksomhed={setVirksomhed}
+            IconComponent={IconPhone}
+            placeholder="Tlf"
+            autoFocus={true}
+          />
+
+          <InputField
+            activeInput={activeInput}
+            setActiveInput={setActiveInput}
+            inputKey="email"
+            virksomhed={virksomhed}
+            setVirksomhed={setVirksomhed}
+            IconComponent={IconMail}
+            placeholder="Email"
+            autoFocus={true}
+          />
         </div>
+      </div>
+      <div className="max-w-xs text-sm text-muted-foreground self-end">
+        <p>
+          Monobryn er et forlag, der udgiver bøger om kunst, kultur og samfund.
+        </p>
       </div>
     </section>
   );

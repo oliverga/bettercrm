@@ -41,6 +41,7 @@ import {
   IconLink,
 } from "@tabler/icons-react";
 import { useKeyboardEvent } from "@/lib/hooks/useKeyboardEvent";
+import InputField from "../InputField";
 
 function AddVirksomhed({ setData, session, setRowSelection }) {
   const [virksomhed, setVirksomhed] = useState(null);
@@ -58,7 +59,7 @@ function AddVirksomhed({ setData, session, setRowSelection }) {
           telefonnr: virksomhed.telefonnr,
           email: virksomhed.email,
           hjemmeside: virksomhed.hjemmeside,
-          user_id: session.session.user.id,
+          user_id: session.user.id,
         },
       ]);
       if (error) throw error;
@@ -68,7 +69,6 @@ function AddVirksomhed({ setData, session, setRowSelection }) {
       toast.success("Virksomhed tilføjet");
     } catch (error) {
       toast.error("Der skete en fejl");
-      console.log(error);
     }
 
     const { data, error } = await supabase
@@ -82,6 +82,7 @@ function AddVirksomhed({ setData, session, setRowSelection }) {
     setActiveInput(null);
   }
 
+  // Open dialog on cmd+a
   useKeyboardEvent("a", (event) => {
     if (event.metaKey || event.altKey) {
       setOpen(true);
@@ -142,51 +143,17 @@ function AddVirksomhed({ setData, session, setRowSelection }) {
         <div className="flex justify-between items-start ">
           <div className="flex flex-col gap-1 flex-wrap ">
             <div className="flex gap-1 flex-wrap">
-              {activeInput !== "cvr" ? (
-                <Button
-                  variant="outline"
-                  className="w-fit"
-                  size="sm"
-                  onClick={() => setActiveInput("cvr")}
-                  onKeyDown={(event) => {
-                    if (event.key !== "Tab") {
-                      event.preventDefault();
-                      setActiveInput("cvr");
-                    }
-                  }}
-                >
-                  {virksomhed && virksomhed.cvr ? (
-                    <IconId className="h-4 w-4 mr-1" />
-                  ) : (
-                    <IconPlus className="h-4 w-4 mr-1" />
-                  )}
-                  {virksomhed && virksomhed.cvr ? virksomhed.cvr : "CVR"}
-                </Button>
-              ) : (
-                <Button variant="outline" className="p-0" size="sm">
-                  <input
-                    type="text"
-                    value={virksomhed ? virksomhed.cvr : ""}
-                    placeholder="CVR"
-                    className=" bg-transparent text-xs w-fit h-full px-3  placeholder:text-xs  active:outline-none focus:outline-none"
-                    onChange={(event) =>
-                      setVirksomhed((prevState) => ({
-                        ...prevState,
-                        cvr: event.target.value,
-                      }))
-                    }
-                    autoFocus
-                    size="8"
-                    maxLength="8"
-                    onKeyDown={(event) => {
-                      if (event.key === "Tab") {
-                        event.preventDefault();
-                        setActiveInput("tlf");
-                      }
-                    }}
-                  />
-                </Button>
-              )}
+              <InputField
+                activeInput={activeInput}
+                setActiveInput={setActiveInput}
+                inputKey="cvr"
+                virksomhed={virksomhed}
+                setVirksomhed={setVirksomhed}
+                IconComponent={IconId}
+                placeholder="CVR"
+                autoFocus={true}
+                size="8"
+              />
               {activeInput !== "tlf" ? (
                 <Button
                   variant="outline"
@@ -230,84 +197,27 @@ function AddVirksomhed({ setData, session, setRowSelection }) {
                   />
                 </Button>
               )}
-
-              {activeInput !== "email" ? (
-                <Button
-                  variant="outline"
-                  className="w-fit"
-                  size="sm"
-                  onClick={() => setActiveInput("email")}
-                  onKeyDown={(event) => {
-                    if (event.key !== "Tab") {
-                      event.preventDefault();
-                      setActiveInput("email");
-                    }
-                  }}
-                >
-                  {virksomhed && virksomhed.email ? (
-                    <IconMail className="h-4 w-4 mr-1" />
-                  ) : (
-                    <IconPlus className="h-4 w-4 mr-1" />
-                  )}
-                  {virksomhed && virksomhed.email ? virksomhed.email : "Email"}
-                </Button>
-              ) : (
-                <Button variant="outline" className="p-0" size="sm">
-                  <input
-                    type="email"
-                    value={virksomhed ? virksomhed.email : ""}
-                    placeholder="Email"
-                    className=" bg-transparent text-xs w-fit h-full px-3  placeholder:text-xs  active:outline-none focus:outline-none"
-                    onChange={(event) =>
-                      setVirksomhed((prevState) => ({
-                        ...prevState,
-                        email: event.target.value,
-                      }))
-                    }
-                    autoFocus
-                  />
-                </Button>
-              )}
-              {activeInput !== "hjemmeside" ? (
-                <Button
-                  variant="outline"
-                  className="w-fit"
-                  size="sm"
-                  onClick={() => setActiveInput("hjemmeside")}
-                  onKeyDown={(event) => {
-                    if (event.key !== "Tab") {
-                      event.preventDefault();
-                      setActiveInput("hjemmeside");
-                    }
-                  }}
-                >
-                  {virksomhed && virksomhed.hjemmeside ? (
-                    <IconLink className="h-4 w-4 mr-1" />
-                  ) : (
-                    <IconPlus className="h-4 w-4 mr-1" />
-                  )}
-                  {virksomhed && virksomhed.hjemmeside
-                    ? virksomhed.hjemmeside
-                    : "Hjemmeside"}
-                </Button>
-              ) : (
-                <Button variant="outline" className="p-0" size="sm">
-                  <input
-                    type="url"
-                    value={virksomhed ? virksomhed.hjemmeside : ""}
-                    placeholder="Hjemmeside"
-                    className=" bg-transparent text-xs w-fit h-full px-3  placeholder:text-xs  active:outline-none focus:outline-none"
-                    onChange={(event) =>
-                      setVirksomhed((prevState) => ({
-                        ...prevState,
-                        hjemmeside: event.target.value,
-                      }))
-                    }
-                    autoFocus
-                    onBlur={() => setActiveInput(null)}
-                  />
-                </Button>
-              )}
+              <InputField
+                activeInput={activeInput}
+                setActiveInput={setActiveInput}
+                inputKey="email"
+                virksomhed={virksomhed}
+                setVirksomhed={setVirksomhed}
+                IconComponent={IconMail}
+                placeholder="Email"
+                autoFocus={true}
+              />
+              <InputField
+                activeInput={activeInput}
+                setActiveInput={setActiveInput}
+                inputKey="hjemmeside"
+                virksomhed={virksomhed}
+                setVirksomhed={setVirksomhed}
+                IconComponent={IconId}
+                placeholder="Hjemmeside"
+                autoFocus={true}
+                onBlur={() => setActiveInput(null)}
+              />
             </div>
             <div className="flex gap-1 flex-wrap">
               <Button variant="outline" className="" size="sm">

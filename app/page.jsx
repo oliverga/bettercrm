@@ -17,13 +17,17 @@ export default async function Home() {
   return (
     <>
       <LandingPageHeader session={session} />
-      <main className="container min-h-screen flex flex-col pt-52 gap-12 items-center">
+      <main className="container min-h-screen flex flex-col pt-64 gap-12 items-center">
         <h1 className="text-8xl font-semibold text-center leading-tighter">
           CRM, simpelthen.
         </h1>
-        <p className="text-xl  text-zinc-700 text-center max-w-md">
+        <p className="text-lg text-muted-foreground text-center ">
           Hold styr på dine kunder, og få et overblik over dine kontakter.
         </p>
+
+        <Button asChild variant="">
+          <Link href="/signup">Prøv gratis nu</Link>
+        </Button>
       </main>
       <footer className="py-28">
         <p className="text-center">

@@ -21,10 +21,13 @@ function LandingPageHeader({ session }) {
           {!session && (
             <div className=" space-x-2">
               <Button asChild variant="ghost">
-                <Link href="/signup">Opret bruger</Link>
+                <Link href="/priser">Priser</Link>
               </Button>
               <Button asChild variant="ghost">
                 <Link href="/login">Log ind</Link>
+              </Button>
+              <Button asChild variant="">
+                <Link href="/signup">Opret bruger</Link>
               </Button>
             </div>
           )}

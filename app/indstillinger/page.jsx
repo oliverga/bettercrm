@@ -35,6 +35,22 @@ async function page() {
             </div> */}
           </div>
           <Separator />
+          <div className="space-y-4">
+            <h2 className="text-xl font-medium">Sprog</h2>
+            {/* <div className="flex items-center gap-2">
+              <p>Mørk tilstand</p>
+
+            </div> */}
+          </div>
+          <Separator />
+          <div className="space-y-4">
+            <h2 className="text-xl font-medium">Konto</h2>
+            {/* <div className="flex items-center gap-2">
+              <p>Mørk tilstand</p>
+
+            </div> */}
+          </div>
+          <Separator />
         </section>
       </main>
     </div>

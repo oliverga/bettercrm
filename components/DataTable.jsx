@@ -66,7 +66,7 @@ import {
 import RowManipulation from "./RowManipulation";
 import parsePhoneNumber from "libphonenumber-js";
 
-function DataTable(session) {
+function DataTable({ session }) {
   const [data, setData] = useState([]);
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -76,22 +76,33 @@ function DataTable(session) {
   });
   const [rowSelection, setRowSelection] = useState({});
 
-  const [virksomhedSearch, setVirksomhedSearch] = useState([]);
-
   const supabase = createClientComponentClient();
+
+  // Fetch data from database on load and sort by creation date
+  useEffect(() => {
+    refreshData();
+  }, []);
+
+  async function refreshData() {
+    if (session && session.user) {
+      const { data, error } = await supabase
+        .from("virksomheder")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .eq("user_id", session.user.id);
+      if (error) {
+        console.error("Error fetching data:", error);
+      } else {
+        setData(data);
+        setRowSelection([]);
+      }
+    }
+  }
 
   // Save column visibility to local storage
   useEffect(() => {
     localStorage.setItem("columnVisibility", JSON.stringify(columnVisibility));
   }, [columnVisibility]);
-
-  useEffect(() => {
-    console.log(session);
-  }, [session]);
-
-  useEffect(() => {
-    console.log(virksomhedSearch);
-  }, [virksomhedSearch]);
 
   // define table columns
   const columns = [
@@ -117,31 +128,7 @@ function DataTable(session) {
       enableSorting: false,
       enableHiding: false,
     },
-    {
-      id: "CVR",
-      header: "CVR",
-      accessorKey: "cvr",
-      cell: ({ row }) => (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>
-              <div
-                onClick={() => {
-                  navigator.clipboard.writeText(row.getValue("CVR"));
-                  toast("CVR kopieret til udklipsholder");
-                }}
-                className="cursor-pointer"
-              >
-                {row.getValue("CVR") && row.getValue("CVR")}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Kopier til udklipsholder</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      ),
-    },
+
     {
       id: "Navn",
       header: ({ column }) => {
@@ -167,6 +154,31 @@ function DataTable(session) {
         <Link href={`/virksomhed/${row.original.id}`}>
           {row.getValue("Navn")}
         </Link>
+      ),
+    },
+    {
+      id: "CVR",
+      header: "CVR",
+      accessorKey: "cvr",
+      cell: ({ row }) => (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <div
+                onClick={() => {
+                  navigator.clipboard.writeText(row.getValue("CVR"));
+                  toast("CVR kopieret til udklipsholder");
+                }}
+                className="cursor-pointer"
+              >
+                {row.getValue("CVR") && row.getValue("CVR")}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Kopier til udklipsholder</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       ),
     },
     {
@@ -288,27 +300,6 @@ function DataTable(session) {
       },
     },
   ];
-
-  // Get data from database on load and order by created date
-  useEffect(() => {
-    async function getData() {
-      const { data, error } = await supabase
-        .from("virksomheder")
-        .select("*")
-        .order("created_at", { ascending: false });
-      setData(data);
-    }
-    getData();
-  }, [supabase]);
-
-  async function refreshData() {
-    const { data, error } = await supabase
-      .from("virksomheder")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setData(data);
-    setRowSelection([]);
-  }
 
   // Define table
   const table = useReactTable({
