@@ -1,8 +1,39 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "./ui/button";
 import { IconCheck, IconTag } from "@tabler/icons-react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import AlertButton from "./AlertButton";
 
-function RowManipulation({ show, table, setRowSelection }) {
+function RowManipulation({
+  show,
+  table,
+  setRowSelection,
+  refreshData,
+  selectedIds,
+}) {
+  const supabase = createClientComponentClient();
+
+  useEffect(() => {
+    console.log(selectedIds);
+  }, [selectedIds]);
+
+  // Then, in your delete function, use these IDs.
+  async function deleteRows() {
+    const { data, error } = await supabase
+      .from("virksomheder")
+      .delete()
+      .in("id", selectedIds);
+    if (error) {
+      toast.error("Noget gik galt");
+    } else {
+      toast.success("Virksomheder slettet");
+      setRowSelection([]);
+      refreshData();
+    }
+  }
+
   return (
     <div
       className={`fixed bottom-8 max-w-7xl w-full flex justify-center fade-in-out ${
@@ -33,9 +64,18 @@ function RowManipulation({ show, table, setRowSelection }) {
             <Button variant="outline" size="sm">
               Exporter
             </Button>
-            <Button variant="destructive" size="sm">
-              Slet
-            </Button>
+
+            <AlertButton
+              deleteRows={deleteRows}
+              variant="destructive"
+              size="sm"
+              title="Slet virksomheder"
+              description="Er du sikker på, at du vil slette de valgte virksomheder?"
+              confirmButtonText="Slet"
+              cancelButtonText="Annuller"
+              onConfirm={deleteRows}
+              buttonText="Slet"
+            />
           </div>
         </CardContent>
       </Card>

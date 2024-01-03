@@ -22,7 +22,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import InputField from "./InputField";
+import InputField from "./InputButton";
 import {
   IconCircle,
   IconId,
@@ -112,9 +112,7 @@ function VirksomhedInfo({ params, session }) {
         </div>
       </div>
       <div className="max-w-xs text-sm text-muted-foreground self-end">
-        <p>
-          Monobryn er et forlag, der udgiver bøger om kunst, kultur og samfund.
-        </p>
+        <p>{virksomhed.beskrivelse}</p>
       </div>
     </section>
   );

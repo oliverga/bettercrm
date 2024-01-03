@@ -40,12 +40,12 @@ import {
   IconLink,
 } from "@tabler/icons-react";
 import { useKeyboardEvent } from "@/lib/hooks/useKeyboardEvent";
-import InputField from "./InputField";
+import InputButton from "./InputButton";
 
-function AddVirksomhed({ setData, session, setRowSelection }) {
+function AddVirksomhed({ setData, session, setRowSelection, refreshData }) {
   const [virksomhed, setVirksomhed] = useState(null);
   const supabase = createClientComponentClient();
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [activeInput, setActiveInput] = useState(null);
 
   // Add virksomhed to database
@@ -58,27 +58,24 @@ function AddVirksomhed({ setData, session, setRowSelection }) {
           telefonnr: virksomhed.telefonnr,
           email: virksomhed.email,
           hjemmeside: virksomhed.hjemmeside,
+          beskrivelse: virksomhed.beskrivelse,
           user_id: session.user.id,
         },
       ]);
-      if (error) throw error;
-
-      setOpen(false);
-      setActiveInput(null);
-      toast.success("Virksomhed tilføjet");
+      if (error) {
+        toast.error("Der skete en fejl");
+      } else {
+        setOpen(false);
+        setActiveInput(null);
+        toast.success("Virksomhed tilføjet");
+        refreshData();
+        setVirksomhed(null);
+        setRowSelection([]);
+        setActiveInput(null);
+      }
     } catch (error) {
-      toast.error("Der skete en fejl");
+      console.log(error);
     }
-
-    const { data, error } = await supabase
-      .from("virksomheder")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setData(data);
-
-    setVirksomhed(null);
-    setRowSelection([]);
-    setActiveInput(null);
   }
 
   // Open dialog on cmd+a
@@ -137,12 +134,20 @@ function AddVirksomhed({ setData, session, setRowSelection }) {
           className="max-w-xs"
         />
 
-        <Textarea placeholder="Beskrivelse" />
+        <Textarea
+          placeholder="Beskrivelse"
+          onChange={(event) =>
+            setVirksomhed((prevState) => ({
+              ...prevState,
+              beskrivelse: event.target.value,
+            }))
+          }
+        />
 
         <div className="flex justify-between items-start ">
           <div className="flex flex-col gap-1 flex-wrap ">
             <div className="flex gap-1 flex-wrap">
-              <InputField
+              <InputButton
                 activeInput={activeInput}
                 setActiveInput={setActiveInput}
                 inputKey="cvr"
@@ -196,7 +201,7 @@ function AddVirksomhed({ setData, session, setRowSelection }) {
                   />
                 </Button>
               )}
-              <InputField
+              <InputButton
                 activeInput={activeInput}
                 setActiveInput={setActiveInput}
                 inputKey="email"
@@ -206,7 +211,7 @@ function AddVirksomhed({ setData, session, setRowSelection }) {
                 placeholder="Email"
                 autoFocus={true}
               />
-              <InputField
+              <InputButton
                 activeInput={activeInput}
                 setActiveInput={setActiveInput}
                 inputKey="hjemmeside"
@@ -215,7 +220,6 @@ function AddVirksomhed({ setData, session, setRowSelection }) {
                 IconComponent={IconId}
                 placeholder="Hjemmeside"
                 autoFocus={true}
-                onBlur={() => setActiveInput(null)}
               />
             </div>
             <div className="flex gap-1 flex-wrap">

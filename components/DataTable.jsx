@@ -75,6 +75,7 @@ function DataTable({ session }) {
     return savedColumnVisibility ? JSON.parse(savedColumnVisibility) : {};
   });
   const [rowSelection, setRowSelection] = useState({});
+  const [selectedIds, setSelectedIds] = useState([]);
 
   const supabase = createClientComponentClient();
 
@@ -121,7 +122,16 @@ function DataTable({ session }) {
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          onCheckedChange={(value) => {
+            row.toggleSelected(!!value);
+            if (value) {
+              setSelectedIds((prevIds) => [...prevIds, row.original.id]);
+            } else {
+              setSelectedIds((prevIds) =>
+                prevIds.filter((id) => id !== row.original.id)
+              );
+            }
+          }}
           aria-label="Select row"
         />
       ),
@@ -359,6 +369,7 @@ function DataTable({ session }) {
             setData={setData}
             session={session}
             setRowSelection={setRowSelection}
+            refreshData={refreshData}
           />
         </div>
         <DropdownMenu closeOnSelect={false} clas>
@@ -463,7 +474,10 @@ function DataTable({ session }) {
       <RowManipulation
         show={table.getFilteredSelectedRowModel().rows.length > 0}
         table={table}
+        rowSelection={rowSelection}
         setRowSelection={setRowSelection}
+        refreshData={refreshData}
+        selectedIds={selectedIds}
       />
     </div>
   );

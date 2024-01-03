@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { IconPlus } from "@tabler/icons-react";
 import React from "react";
 
-function InputField({
+function InputButton({
   activeInput,
   setActiveInput,
   inputKey,
@@ -56,4 +56,4 @@ function InputField({
   );
 }
 
-export default InputField;
+export default InputButton;
