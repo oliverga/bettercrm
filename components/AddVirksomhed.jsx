@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
-import "./style.css";
 
 import {
   Dialog,
@@ -41,12 +40,12 @@ import {
   IconLink,
 } from "@tabler/icons-react";
 import { useKeyboardEvent } from "@/lib/hooks/useKeyboardEvent";
-import InputField from "../InputField";
+import InputField from "./InputField";
 
 function AddVirksomhed({ setData, session, setRowSelection }) {
   const [virksomhed, setVirksomhed] = useState(null);
   const supabase = createClientComponentClient();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [activeInput, setActiveInput] = useState(null);
 
   // Add virksomhed to database

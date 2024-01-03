@@ -2,7 +2,7 @@
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import AddVirksomhed from "./AddVirksomhed/AddVirksomhed";
+import AddVirksomhed from "./AddVirksomhed";
 
 // shadcn components import
 import {
