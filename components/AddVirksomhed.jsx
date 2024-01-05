@@ -144,7 +144,7 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
             <TooltipTrigger>
               <Button className="" onClick={() => setOpen(true)}>
                 <IconPlus className="h-4 w-4 mr-2" />
-                Tilføj Virksomhed!
+                Tilføj Virksomhed
               </Button>
             </TooltipTrigger>
 
