@@ -7,10 +7,10 @@ import Link from "next/link";
 function LandingPageHeader({ session }) {
   return (
     <header className="absolute w-screen top-0 left-0">
-      <nav className="container p-8 flex gap-1 justify-between">
-        <div className="flex items-center gap-2 font-medium">
-          <IconMountain className="h-6 w-6 text-purple-500" stroke="2" />
-          Blanc
+      <nav className="container p-12 flex gap-1 justify-between">
+        <div className="flex items-center gap-2 font-medium text-2xl ">
+          <IconMountain className="h-8 w-8 text-purple-500" stroke="2" />
+          Sherpa
         </div>
         <div className="flex items-center gap-2">
           {session && (
