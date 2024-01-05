@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 import SignUpForm from "@/components/SignUpForm";
 
@@ -16,6 +17,10 @@ async function SignUp() {
   const {
     data: { session },
   } = await supabase.auth.getSession();
+
+  if (session) {
+    redirect("/dashboard");
+  }
 
   return (
     <>
