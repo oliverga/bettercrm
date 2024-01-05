@@ -8,11 +8,9 @@ import PhoneInput from "react-phone-number-input";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
 
@@ -41,12 +39,27 @@ import {
 } from "@tabler/icons-react";
 import { useKeyboardEvent } from "@/lib/hooks/useKeyboardEvent";
 import InputButton from "./InputButton";
+import AddTag from "./AddTag";
+import SetStatus from "./SetStatus";
 
 function AddVirksomhed({ setData, session, setRowSelection, refreshData }) {
   const [virksomhed, setVirksomhed] = useState(null);
   const supabase = createClientComponentClient();
   const [open, setOpen] = useState(false);
   const [activeInput, setActiveInput] = useState(null);
+  const [tags, setTags] = useState([]);
+
+  const fetchTags = async () => {
+    const { data, error } = await supabase
+      .from("tags")
+      .select("*")
+      .eq("user_id", session.user.id);
+    setTags(data);
+  };
+
+  useEffect(() => {
+    fetchTags();
+  }, []);
 
   // Add virksomhed to database
   async function addVirksomhed() {
@@ -59,9 +72,23 @@ function AddVirksomhed({ setData, session, setRowSelection, refreshData }) {
           email: virksomhed.email,
           hjemmeside: virksomhed.hjemmeside,
           beskrivelse: virksomhed.beskrivelse,
+          tags: virksomhed.tags,
           user_id: session.user.id,
         },
       ]);
+
+      // Add new tags to database
+      for (const tag of virksomhed.tags) {
+        if (!tags.find((existingTag) => existingTag.value === tag)) {
+          const { data, error } = await supabase
+            .from("tags")
+            .insert([{ value: tag, user_id: session.user.id }]);
+          if (error) {
+            console.error("Error adding new tag: ", error);
+          }
+        }
+      }
+
       if (error) {
         toast.error("Der skete en fejl");
       } else {
@@ -223,13 +250,21 @@ function AddVirksomhed({ setData, session, setRowSelection, refreshData }) {
               />
             </div>
             <div className="flex gap-1 flex-wrap">
-              <Button variant="outline" className="" size="sm">
-                <IconCircle className="h-4 w-4 mr-1" />
-                Status
-              </Button>
-              <Button variant="outline" className="" size="sm">
-                <IconTag className="h-4 w-4" />
-              </Button>
+              <SetStatus
+                virksomhed={virksomhed}
+                setVirksomhed={setVirksomhed}
+                activeInput={activeInput}
+                setActiveInput={setActiveInput}
+                session={session}
+              />
+              <AddTag
+                virksomhed={virksomhed}
+                setVirksomhed={setVirksomhed}
+                activeInput={activeInput}
+                setActiveInput={setActiveInput}
+                session={session}
+                tags={tags}
+              />
             </div>
           </div>
           <DialogClose asChild className=" place-self-end">
