@@ -2,7 +2,7 @@
 
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -19,11 +19,16 @@ import {
 } from "@tabler/icons-react";
 import { Skeleton } from "./ui/skeleton";
 import InfoButton from "./InfoButton";
+import EditVirksomhed from "./EditVirksomhed";
+import { Badge } from "./ui/badge";
 
 function VirksomhedInfo({ params, session }) {
   const supabase = createClientComponentClient();
   const [virksomhed, setVirksomhed] = useState(null);
   const [activeInput, setActiveInput] = useState(null);
+  const [tags, setTags] = useState([]);
+
+  const [editVirksomhedOpen, setEditVirksomhedOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,6 +42,20 @@ function VirksomhedInfo({ params, session }) {
     };
     fetchData();
   }, [params, supabase]);
+
+  useEffect(() => {
+    if (virksomhed) {
+      const fetchTags = async () => {
+        const response = await supabase
+          .from("tags")
+          .select("*")
+          .eq("user_id", session.user.id)
+          .eq("virksomhed_id", virksomhed.id);
+        setTags(response.data);
+      };
+      fetchTags();
+    }
+  }, [virksomhed]);
 
   if (!virksomhed) {
     return (
@@ -52,9 +71,13 @@ function VirksomhedInfo({ params, session }) {
         <div className="flex items-center gap-3">
           <IconBuilding className="h-6 w-6" />
           <h1 className="text-xl">{virksomhed.navn}</h1>
-          <Button variant="ghost" size="icon" className="">
-            <IconEdit className="h-4 w-4" />
-          </Button>
+          <EditVirksomhed
+            virksomhed={virksomhed}
+            setVirksomhed={setVirksomhed}
+            open={editVirksomhedOpen}
+            setOpen={setEditVirksomhedOpen}
+            session={session}
+          />
         </div>
         <div className="flex flex-wrap gap-1 max-w-xs">
           <InfoButton
@@ -98,6 +121,17 @@ function VirksomhedInfo({ params, session }) {
             placeholder="Email"
             autoFocus={true}
           />
+        </div>
+        <div>
+          {tags ? (
+            tags.map((tag, index) => (
+              <Badge key={index} className="w-fit" variant="outline">
+                {tag.value}
+              </Badge>
+            ))
+          ) : (
+            <></>
+          )}
         </div>
       </div>
       <div className="max-w-xs text-sm text-muted-foreground self-end">

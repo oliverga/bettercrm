@@ -2,7 +2,6 @@
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import AddVirksomhed from "./AddVirksomhed";
 
 // shadcn components import
 import {
@@ -63,7 +62,6 @@ import {
   IconSettings,
 } from "@tabler/icons-react";
 
-import RowManipulation from "./RowManipulation";
 import parsePhoneNumber from "libphonenumber-js";
 
 function DataTable({ session, params }) {
@@ -436,11 +434,11 @@ function DataTable({ session, params }) {
         </div>
       </div>
 
-      <RowManipulation
+      {/* <RowManipulation
         show={table.getFilteredSelectedRowModel().rows.length > 0}
         table={table}
         setRowSelection={setRowSelection}
-      />
+      /> */}
     </div>
   );
 }

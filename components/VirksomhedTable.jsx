@@ -64,7 +64,7 @@ import {
   IconSettings,
 } from "@tabler/icons-react";
 
-import RowManipulation from "./RowManipulation";
+import VirksomhedRowManipulation from "./VirksomhedRowManipulation";
 import parsePhoneNumber from "libphonenumber-js";
 
 function DataTable({ session }) {
@@ -81,7 +81,7 @@ function DataTable({ session }) {
 
   const supabase = createClientComponentClient();
 
-  // Fetch data from database on load and sort by creation date
+  // Fetch data from database on load
   useEffect(() => {
     refreshData();
   }, []);
@@ -94,6 +94,7 @@ function DataTable({ session }) {
         .order("created_at", { ascending: false });
       if (error) {
         console.error("Error fetching data:", error);
+        toast.error("Der skete en fejl");
       } else {
         setData(data);
         setRowSelection([]);
@@ -201,11 +202,12 @@ function DataTable({ session }) {
           return null;
         }
         const phoneNumber = parsePhoneNumber(row.getValue("Telefon"));
-        if (!phoneNumber) {
-          return null;
-        }
-        return (
+        return phoneNumber ? (
           <a href={phoneNumber.getURI()}>{phoneNumber.formatInternational()}</a>
+        ) : (
+          <a href={`tel:${row.getValue("Telefon")}`}>
+            {row.getValue("Telefon")}
+          </a>
         );
       },
     },
@@ -352,7 +354,7 @@ function DataTable({ session }) {
                 </Button>
               </TooltipTrigger>
 
-              <TooltipContent side="top" align="start">
+              <TooltipContent side="top">
                 <p>Database Indstillinger</p>
               </TooltipContent>
             </Tooltip>
@@ -476,7 +478,7 @@ function DataTable({ session }) {
         </div>
       </div>
 
-      <RowManipulation
+      <VirksomhedRowManipulation
         show={table.getFilteredSelectedRowModel().rows.length > 0}
         table={table}
         rowSelection={rowSelection}

@@ -12,9 +12,6 @@ import {
 import { Button } from "./ui/button";
 
 export default function AlertButton({
-  showDialog,
-  setShowDialog,
-  deleteRows,
   variant,
   size,
   title,

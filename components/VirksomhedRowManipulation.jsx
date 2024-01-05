@@ -62,7 +62,6 @@ function RowManipulation({
             </Button>
 
             <AlertButton
-              deleteRows={deleteRows}
               variant="destructive"
               size="sm"
               title="Slet virksomheder"

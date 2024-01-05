@@ -5,7 +5,6 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
 import parsePhoneNumber from "libphonenumber-js";
-import { v4 as uuidv4 } from "uuid";
 
 import {
   Dialog,
@@ -38,21 +37,29 @@ import {
   IconPlus,
   IconTag,
   IconLink,
+  IconEdit,
 } from "@tabler/icons-react";
 import { useKeyboardEvent } from "@/lib/hooks/useKeyboardEvent";
 import InputButton from "./InputButton";
 import AddTag from "./AddTag";
 import SetStatus from "./SetStatus";
 
-function AddVirksomhed({ session, setRowSelection, refreshData }) {
-  const [virksomhed, setVirksomhed] = useState(null);
+function EditVirksomhed({
+  setData,
+  session,
+  setRowSelection,
+  refreshData,
+  open,
+  setOpen,
+  virksomhed,
+  setVirksomhed,
+}) {
   const supabase = createClientComponentClient();
-  const [open, setOpen] = useState(false);
+
   const [activeInput, setActiveInput] = useState(null);
   const [tags, setTags] = useState([]);
-
-  // generate id
-  const id = uuidv4();
+  const [newTags, setNewTags] = useState([]);
+  const [proxyVirksomhed, setProxyVirksomhed] = useState(virksomhed);
 
   const fetchTags = async () => {
     const { data, error } = await supabase
@@ -63,56 +70,12 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
   };
 
   useEffect(() => {
+    setProxyVirksomhed(virksomhed);
+  }, [virksomhed]);
+
+  useEffect(() => {
     fetchTags();
   }, []);
-
-  // Add virksomhed to database
-  async function addVirksomhed() {
-    try {
-      const { data: virksomhedData, error: virksomhedError } = await supabase
-        .from("virksomheder")
-        .insert([
-          {
-            navn: virksomhed.navn,
-            cvr: virksomhed.cvr,
-            telefonnr: virksomhed.telefonnr,
-            email: virksomhed.email,
-            hjemmeside: virksomhed.hjemmeside,
-            beskrivelse: virksomhed.beskrivelse,
-            user_id: session.user.id,
-            id: id,
-          },
-        ]);
-
-      if (virksomhedError) {
-        toast.error("Der skete en fejl");
-        console.error("Error adding virksomhed: ", virksomhedError);
-      } else {
-        await addTags(id);
-        setOpen(false);
-        setActiveInput(null);
-        toast.success("Virksomhed tilføjet");
-        refreshData();
-        setVirksomhed(null);
-        setRowSelection([]);
-        setActiveInput(null);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  const addTags = async (id) => {
-    const uniqueTags = new Set(virksomhed.tags);
-    for (const tag of uniqueTags) {
-      const { data: tagData, error: tagError } = await supabase
-        .from("tags")
-        .insert([{ value: tag, virksomhed_id: id, user_id: session.user.id }]);
-      if (tagError) {
-        console.error("Error adding new tag: ", tagError);
-      }
-    }
-  };
 
   // Open dialog on cmd+a
   useKeyboardEvent("a", (event) => {
@@ -136,15 +99,52 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
     }
   }, [open, setOpen]);
 
+  // Update virksomhed in database
+  const updateVirksomhed = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("virksomheder")
+        .update(proxyVirksomhed)
+        .eq("id", virksomhed.id);
+
+      // Add new tags to database
+      for (const tag of newTags) {
+        const { data, error } = await supabase
+          .from("tags")
+          .insert([{ value: tag.value, user_id: session.user.id }]);
+        if (error) {
+          throw error;
+        }
+      }
+
+      if (error) {
+        throw error;
+      } else {
+        setVirksomhed(proxyVirksomhed);
+        setNewTags([]);
+        toast.success("Virksomhed opdateret");
+      }
+    } catch (error) {
+      toast.error("Der skete en fejl");
+      console.error("Error updating virksomhed: ", error);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
-              <Button className="" onClick={() => setOpen(true)}>
-                <IconPlus className="h-4 w-4 mr-2" />
-                Tilføj Virksomhed
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setOpen(true);
+                  setActiveInput(null);
+                }}
+              >
+                <IconEdit className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
 
@@ -157,12 +157,13 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
 
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="mb-2">Tilføj Virksomhed</DialogTitle>
+          <DialogTitle className="mb-2">Rediger Virksomhed</DialogTitle>
         </DialogHeader>
         <Input
           placeholder="Navn"
+          value={proxyVirksomhed.navn}
           onChange={(event) =>
-            setVirksomhed((prevState) => ({
+            setProxyVirksomhed((prevState) => ({
               ...prevState,
               navn: event.target.value,
             }))
@@ -172,8 +173,9 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
 
         <Textarea
           placeholder="Beskrivelse"
+          value={proxyVirksomhed.beskrivelse}
           onChange={(event) =>
-            setVirksomhed((prevState) => ({
+            setProxyVirksomhed((prevState) => ({
               ...prevState,
               beskrivelse: event.target.value,
             }))
@@ -187,8 +189,8 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
                 activeInput={activeInput}
                 setActiveInput={setActiveInput}
                 inputKey="cvr"
-                virksomhed={virksomhed}
-                setVirksomhed={setVirksomhed}
+                virksomhed={proxyVirksomhed}
+                setVirksomhed={setProxyVirksomhed}
                 IconComponent={IconId}
                 placeholder="CVR"
                 autoFocus={true}
@@ -207,27 +209,27 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
                     }
                   }}
                 >
-                  {virksomhed && virksomhed.telefonnr ? (
+                  {proxyVirksomhed && proxyVirksomhed.telefonnr ? (
                     <IconPhone className="h-4 w-4 mr-1" />
                   ) : (
                     <IconPlus className="h-4 w-4 mr-1" />
                   )}
-                  {virksomhed && virksomhed.telefonnr
-                    ? parsePhoneNumber(virksomhed.telefonnr)
+                  {proxyVirksomhed && proxyVirksomhed.telefonnr
+                    ? parsePhoneNumber(proxyVirksomhed.telefonnr)
                       ? parsePhoneNumber(
-                          virksomhed.telefonnr
+                          proxyVirksomhed.telefonnr
                         ).formatInternational()
-                      : virksomhed.telefonnr
+                      : proxyVirksomhed.telefonnr
                     : "Tlf."}
                 </Button>
               ) : (
                 <Button variant="outline" className="p-0" size="sm">
                   <PhoneInput
-                    value={virksomhed ? virksomhed.telefonnr : ""}
+                    value={proxyVirksomhed ? proxyVirksomhed.telefonnr : ""}
                     placeholder="Tlf."
                     className=" bg-transparent px-0 text-xs w-fit h-full pl-3  placeholder:text-xs ring-0 outline-none active:outline-none focus:outline-none tlf-input"
                     onChange={(value) =>
-                      setVirksomhed((prevState) => ({
+                      setProxyVirksomhed((prevState) => ({
                         ...prevState,
                         telefonnr: value,
                       }))
@@ -245,8 +247,8 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
                 activeInput={activeInput}
                 setActiveInput={setActiveInput}
                 inputKey="email"
-                virksomhed={virksomhed}
-                setVirksomhed={setVirksomhed}
+                virksomhed={proxyVirksomhed}
+                setVirksomhed={setProxyVirksomhed}
                 IconComponent={IconMail}
                 placeholder="Email"
                 autoFocus={true}
@@ -255,8 +257,8 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
                 activeInput={activeInput}
                 setActiveInput={setActiveInput}
                 inputKey="hjemmeside"
-                virksomhed={virksomhed}
-                setVirksomhed={setVirksomhed}
+                virksomhed={proxyVirksomhed}
+                setVirksomhed={setProxyVirksomhed}
                 IconComponent={IconId}
                 placeholder="Hjemmeside"
                 autoFocus={true}
@@ -264,24 +266,32 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
             </div>
             <div className="flex gap-1 flex-wrap">
               <SetStatus
-                virksomhed={virksomhed}
-                setVirksomhed={setVirksomhed}
+                virksomhed={proxyVirksomhed}
+                setVirksomhed={setProxyVirksomhed}
                 activeInput={activeInput}
                 setActiveInput={setActiveInput}
               />
               <AddTag
-                virksomhed={virksomhed}
-                setVirksomhed={setVirksomhed}
+                virksomhed={proxyVirksomhed}
+                setVirksomhed={setProxyVirksomhed}
                 activeInput={activeInput}
                 setActiveInput={setActiveInput}
                 tags={tags}
+                newTags={newTags}
+                setNewTags={setNewTags}
                 fetchTags={fetchTags}
               />
             </div>
           </div>
           <DialogClose asChild className=" place-self-end">
-            <Button type="submit" onClick={addVirksomhed}>
-              Tilføj
+            <Button
+              type="submit"
+              onClick={() => {
+                updateVirksomhed();
+                setOpen(false);
+              }}
+            >
+              Gem
             </Button>
           </DialogClose>
         </div>
@@ -290,4 +300,4 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
   );
 }
 
-export default AddVirksomhed;
+export default EditVirksomhed;
