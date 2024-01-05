@@ -66,28 +66,21 @@ import {
 import RowManipulation from "./RowManipulation";
 import parsePhoneNumber from "libphonenumber-js";
 
-function DataTable(session) {
+function DataTable({ session, params }) {
   const [data, setData] = useState([]);
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
-  const [columnVisibility, setColumnVisibility] = useState(() => {
-    const savedColumnVisibility = localStorage.getItem("columnVisibility");
-    return savedColumnVisibility ? JSON.parse(savedColumnVisibility) : {};
-  });
+  const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
 
-  const [virksomhedSearch, setVirksomhedSearch] = useState([]);
+  const [virksomhed, setVirksomhed] = useState(null);
 
   const supabase = createClientComponentClient();
 
-  // Save column visibility to local storage
-  useEffect(() => {
-    localStorage.setItem("columnVisibility", JSON.stringify(columnVisibility));
-  }, [columnVisibility]);
-
-  useEffect(() => {
-    console.log(virksomhedSearch);
-  }, [virksomhedSearch]);
+  // // Save column visibility to local storage
+  // useEffect(() => {
+  //   localStorage.setItem("columnVisibility", JSON.stringify(columnVisibility));
+  // }, [columnVisibility]);
 
   // define table columns
   const columns = [
@@ -114,31 +107,6 @@ function DataTable(session) {
       enableHiding: false,
     },
     {
-      id: "CVR",
-      header: "CVR",
-      accessorKey: "cvr",
-      cell: ({ row }) => (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>
-              <div
-                onClick={() => {
-                  navigator.clipboard.writeText(row.getValue("CVR"));
-                  toast("CVR kopieret til udklipsholder");
-                }}
-                className="cursor-pointer"
-              >
-                {row.getValue("CVR") && row.getValue("CVR")}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Kopier til udklipsholder</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      ),
-    },
-    {
       id: "Navn",
       header: ({ column }) => {
         return (
@@ -160,11 +128,25 @@ function DataTable(session) {
       },
       accessorKey: "navn",
       cell: ({ row }) => (
-        <Link href={`/virksomhed/${row.original.id}`}>
-          {row.getValue("Navn")}
-        </Link>
+        <Link href={`/kontakt/${row.original.id}`}>{row.getValue("Navn")}</Link>
       ),
     },
+    {
+      id: "Titel",
+      header: "Titel",
+      accessorKey: "titel",
+      cell: ({ row }) => {
+        if (row.original.virksomhed) {
+          const virksomhedId = row.original.virksomhed.id;
+          const relation = row.original.virksomhed_relationer.find(
+            (relation) => relation.virksomhed === virksomhedId
+          );
+          return relation ? relation.titel : null;
+        }
+        return null;
+      },
+    },
+
     {
       id: "Telefon",
       header: "Telefon",
@@ -192,20 +174,7 @@ function DataTable(session) {
         </Link>
       ),
     },
-    {
-      id: "Hjemmeside",
-      header: "Hjemmeside",
-      accessorKey: "hjemmeside",
-      cell: ({ row }) => {
-        const website = row.getValue("Hjemmeside");
-        const websiteWithoutHttps = website
-          ? website.replace("https://", "")
-          : "";
-        return website ? (
-          <a href={`https://${websiteWithoutHttps}`}>{websiteWithoutHttps}</a>
-        ) : null;
-      },
-    },
+
     {
       id: "Dato Tilføjet",
       header: ({ column }) => {
@@ -237,7 +206,7 @@ function DataTable(session) {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const virksomhed = row.original;
+        const kontakt = row.original;
 
         return (
           <DropdownMenu>
@@ -249,29 +218,21 @@ function DataTable(session) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {/* <DropdownMenuLabel>Handlinger</DropdownMenuLabel> */}
-              <Link href={`/virksomhed/${virksomhed.id}`}>
+              <Link href={`/kontakt/${kontakt.id}`}>
                 <DropdownMenuItem>Vis</DropdownMenuItem>
               </Link>
-              <DropdownMenuItem
-                onClick={() => {
-                  navigator.clipboard.writeText(virksomhed.cvr);
-                  toast("CVR kopieret til udklipsholder");
-                }}
-              >
-                Kopier CVR
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={async () => {
                   const { error } = await supabase
-                    .from("virksomheder") // Replace with your table name
+                    .from("kontakter") // Replace with your table name
                     .delete()
-                    .eq("id", virksomhed.id);
+                    .eq("id", kontakt.id);
 
                   if (error) {
                     console.error("Error deleting row:", error);
                   } else {
-                    toast("Virksomhed slettet");
+                    toast("Kontakt slettet");
                     refreshData();
                   }
                 }}
@@ -285,26 +246,36 @@ function DataTable(session) {
     },
   ];
 
-  // Get data from database on load and order by created date
   useEffect(() => {
-    async function getData() {
-      const { data, error } = await supabase
+    const fetchData = async () => {
+      const { id } = params;
+      const response = await supabase
         .from("virksomheder")
         .select("*")
-        .order("created_at", { ascending: false });
-      setData(data);
-    }
-    getData();
-  }, [supabase]);
+        .eq("id", id);
+      console.log(response.data);
+      setVirksomhed(response.data[0]);
+      getPersonData(response.data[0].id);
+    };
+    fetchData();
+  }, [params, supabase]);
 
-  async function refreshData() {
+  const getPersonData = async (virksomhedId) => {
     const { data, error } = await supabase
-      .from("virksomheder")
+      .from("kontakter")
       .select("*")
       .order("created_at", { ascending: false });
-    setData(data);
-    setRowSelection([]);
-  }
+    console.log(data);
+
+    const filteredData = data.filter((person) =>
+      person.virksomhed_relationer.some(
+        (relation) => relation.virksomhed === virksomhedId
+      )
+    );
+
+    setData(filteredData);
+    console.log(filteredData);
+  };
 
   // Define table
   const table = useReactTable({
@@ -348,7 +319,7 @@ function DataTable(session) {
             </Tooltip>
           </TooltipProvider> */}
           <Input
-            placeholder="Søg i personer..."
+            placeholder="Søg i kontakter..."
             value={
               table.getColumn("Navn")
                 ? table.getColumn("Navn").getFilterValue()

@@ -2,27 +2,9 @@
 
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import InputField from "./InputButton";
+
 import {
   IconCircle,
   IconId,
@@ -31,13 +13,16 @@ import {
   IconPlus,
   IconTag,
   IconLink,
+  IconEdit,
+  IconEditCircle,
+  IconBuilding,
 } from "@tabler/icons-react";
 import { Skeleton } from "./ui/skeleton";
+import InfoButton from "./InfoButton";
 
 function VirksomhedInfo({ params, session }) {
   const supabase = createClientComponentClient();
   const [virksomhed, setVirksomhed] = useState(null);
-  const [virksomhedData, setVirksomhedData] = useState(null);
   const [activeInput, setActiveInput] = useState(null);
 
   useEffect(() => {
@@ -55,20 +40,24 @@ function VirksomhedInfo({ params, session }) {
 
   if (!virksomhed) {
     return (
-      <div className="mt-12 flex flex-col md:flex-row gap-4 mx-auto min-h-[112px]">
-        <Skeleton className="max-w-[80px] w-full h-[28px]" />
+      <div className="mt-12 flex flex-col md:flex-row gap-4 mx-auto min-h-[120px]">
+        <Skeleton className="max-w-[140px] w-full h-[36px]" />
       </div>
     );
   }
 
   return (
     <section className="mt-12 flex flex-col md:flex-row gap-4 mx-auto">
-      <div className="flex flex-col gap-4 w-fit">
-        <div>
+      <div className="flex flex-col gap-4 w-fit min-h-[120px]">
+        <div className="flex items-center gap-3">
+          <IconBuilding className="h-6 w-6" />
           <h1 className="text-xl">{virksomhed.navn}</h1>
+          <Button variant="ghost" size="icon" className="">
+            <IconEdit className="h-4 w-4" />
+          </Button>
         </div>
         <div className="flex flex-wrap gap-1 max-w-xs">
-          <InputField
+          <InfoButton
             activeInput={activeInput}
             setActiveInput={setActiveInput}
             inputKey="cvr"
@@ -78,7 +67,7 @@ function VirksomhedInfo({ params, session }) {
             placeholder="CVR"
             autoFocus={true}
           />
-          <InputField
+          <InfoButton
             activeInput={activeInput}
             setActiveInput={setActiveInput}
             inputKey="hjemmeside"
@@ -88,7 +77,7 @@ function VirksomhedInfo({ params, session }) {
             placeholder="Hjemmeside"
             autoFocus={true}
           />
-          <InputField
+          <InfoButton
             activeInput={activeInput}
             setActiveInput={setActiveInput}
             inputKey="telefonnr"
@@ -99,7 +88,7 @@ function VirksomhedInfo({ params, session }) {
             autoFocus={true}
           />
 
-          <InputField
+          <InfoButton
             activeInput={activeInput}
             setActiveInput={setActiveInput}
             inputKey="email"
