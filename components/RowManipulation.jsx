@@ -15,10 +15,6 @@ function RowManipulation({
 }) {
   const supabase = createClientComponentClient();
 
-  useEffect(() => {
-    console.log(selectedIds);
-  }, [selectedIds]);
-
   // Then, in your delete function, use these IDs.
   async function deleteRows() {
     const { data, error } = await supabase
