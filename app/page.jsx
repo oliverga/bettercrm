@@ -22,11 +22,13 @@ export default async function Home() {
           CRM, simpelthen.
         </h1>
         <p className="text-lg text-muted-foreground text-center ">
-          Hold styr på dine kunder, og få et overblik over dine kontakter.
+          Hold styr på dine kunder, og få overblik over dine kontakter.
         </p>
 
         <Button asChild variant="">
-          <Link href="/signup">Prøv gratis nu</Link>
+          <Link href="/signup" size="xl">
+            Prøv gratis nu
+          </Link>
         </Button>
       </main>
       <footer className="py-28">
