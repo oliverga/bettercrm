@@ -1,5 +1,6 @@
 "use client";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import AddVirksomhed from "./AddVirksomhed";
@@ -76,6 +77,7 @@ function DataTable({ session }) {
   });
   const [rowSelection, setRowSelection] = useState({});
   const [selectedIds, setSelectedIds] = useState([]);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
 
   const supabase = createClientComponentClient();
 
@@ -89,8 +91,7 @@ function DataTable({ session }) {
       const { data, error } = await supabase
         .from("virksomheder")
         .select("*")
-        .order("created_at", { ascending: false })
-        .eq("user_id", session.user.id);
+        .order("created_at", { ascending: false });
       if (error) {
         console.error("Error fetching data:", error);
       } else {
@@ -323,7 +324,11 @@ function DataTable({ session }) {
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-
+    initialState: {
+      pagination: {
+        pageSize: rowsPerPage,
+      },
+    },
     state: {
       sorting,
       columnFilters,

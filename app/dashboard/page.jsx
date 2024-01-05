@@ -1,10 +1,11 @@
-import DataTable from "@/components/DataTable";
+import VirksomhedTable from "@/components/VirksomhedTable";
 import Header from "@/layouts/Header";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function Home() {
   const cookieStore = cookies();
@@ -13,6 +14,10 @@ export default async function Home() {
   const {
     data: { session },
   } = await supabase.auth.getSession();
+
+  if (!session) {
+    redirect("/");
+  }
 
   return (
     <>
@@ -23,13 +28,13 @@ export default async function Home() {
             <Tabs defaultValue="virksomheder" className="">
               <TabsList className>
                 <TabsTrigger value="virksomheder">Virksomheder</TabsTrigger>
-                <TabsTrigger value="personer">Personer</TabsTrigger>
-                <TabsTrigger value="Aktiviteter">Aktiviteter</TabsTrigger>
+                <TabsTrigger value="kontakter">Kontakter</TabsTrigger>
+                {/* <TabsTrigger value="Aktiviteter">Aktiviteter</TabsTrigger> */}
               </TabsList>
               <TabsContent value="virksomheder" className="mt-8">
-                <DataTable session={session} />
+                <VirksomhedTable session={session} />
               </TabsContent>
-              <TabsContent value="personer"></TabsContent>
+              <TabsContent value="kontakter"></TabsContent>
             </Tabs>
           </div>
         </main>
