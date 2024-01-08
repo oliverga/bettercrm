@@ -12,6 +12,7 @@ function RowManipulation({
   setRowSelection,
   refreshData,
   selectedIds,
+  session,
 }) {
   const supabase = createClientComponentClient();
 
@@ -20,7 +21,9 @@ function RowManipulation({
     const { data, error } = await supabase
       .from("virksomheder")
       .delete()
-      .in("id", selectedIds);
+      .in("id", selectedIds)
+      .eq("user_id", session.user.id);
+
     if (error) {
       toast.error("Noget gik galt");
     } else {

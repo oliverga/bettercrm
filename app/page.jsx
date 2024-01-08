@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import LandingPageHeader from "@/layouts/LandingPageHeader";
 
 import Link from "next/link";
+import "./landing.css";
 
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
@@ -26,9 +27,11 @@ export default async function Home() {
         </p>
 
         <Button asChild variant="">
-          <Link href="/signup" size="xl">
-            Prøv gratis nu
-          </Link>
+          {session ? (
+            <Link href="/dashboard">Gå til dit dashboard</Link>
+          ) : (
+            <Link href="/signup">Prøv gratis nu</Link>
+          )}
         </Button>
       </main>
       <footer className="py-28">

@@ -1,9 +1,11 @@
 "use client";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import AddVirksomhed from "./AddVirksomhed";
+import parsePhoneNumber from "libphonenumber-js";
+
+import ManageVirksomhed from "./ManageVirksomhed";
+import VirksomhedRowManipulation from "./VirksomhedRowManipulation";
 
 // shadcn components import
 import {
@@ -53,6 +55,7 @@ import {
 } from "@tanstack/react-table";
 
 import { toast } from "sonner";
+
 import {
   IconAdjustments,
   IconCaretDown,
@@ -63,9 +66,6 @@ import {
   IconDots,
   IconSettings,
 } from "@tabler/icons-react";
-
-import VirksomhedRowManipulation from "./VirksomhedRowManipulation";
-import parsePhoneNumber from "libphonenumber-js";
 
 function DataTable({ session }) {
   const [data, setData] = useState([]);
@@ -371,11 +371,9 @@ function DataTable({ session }) {
             }
             className="max-w-sm"
           />
-
-          <AddVirksomhed
-            setData={setData}
+          <ManageVirksomhed
             session={session}
-            setRowSelection={setRowSelection}
+            mode="add"
             refreshData={refreshData}
           />
         </div>
@@ -485,6 +483,7 @@ function DataTable({ session }) {
         setRowSelection={setRowSelection}
         refreshData={refreshData}
         selectedIds={selectedIds}
+        session={session}
       />
     </div>
   );

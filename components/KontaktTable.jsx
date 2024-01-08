@@ -134,17 +134,13 @@ function DataTable({ session, params }) {
       header: "Titel",
       accessorKey: "titel",
       cell: ({ row }) => {
-        if (row.original.virksomhed) {
-          const virksomhedId = row.original.virksomhed.id;
-          const relation = row.original.virksomhed_relationer.find(
-            (relation) => relation.virksomhed === virksomhedId
-          );
-          return relation ? relation.titel : null;
-        }
-        return null;
+        const virksomhedId = params.id;
+        const relation = row.original.virksomhed_relationer.find(
+          (relation) => relation.virksomhed === virksomhedId
+        );
+        return relation ? relation.titel : null;
       },
     },
-
     {
       id: "Telefon",
       header: "Telefon",

@@ -18,18 +18,12 @@ import {
 
 import { Input } from "@/components/ui/input";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
 import { Button } from "@/components/ui/button";
 
 import { Textarea } from "@/components/ui/textarea";
 
 import { toast } from "sonner";
+
 import {
   IconCircle,
   IconId,
@@ -38,89 +32,63 @@ import {
   IconPlus,
   IconTag,
   IconLink,
+  IconEdit,
 } from "@tabler/icons-react";
 import { useKeyboardEvent } from "@/lib/hooks/useKeyboardEvent";
 import InputButton from "./InputButton";
-import AddTag from "./AddTag";
 import SetStatus from "./SetStatus";
+import { useRouter } from "next/navigation";
 
-function AddVirksomhed({ session, setRowSelection, refreshData }) {
-  const [virksomhed, setVirksomhed] = useState(null);
+function ManageVirksomhed({ session, mode, virksomhed, setVirksomhed }) {
   const supabase = createClientComponentClient();
   const [open, setOpen] = useState(false);
   const [activeInput, setActiveInput] = useState(null);
-  // const [tags, setTags] = useState([]);
+  const [editingVirksomhed, setEditingVirksomhed] = useState(virksomhed);
 
-  // generate id
   const id = uuidv4();
+  const router = useRouter();
 
-  // const fetchTags = async () => {
-  //   const { data, error } = await supabase
-  //     .from("tags")
-  //     .select("*")
-  //     .eq("user_id", session.user.id);
-  //   setTags(data);
-  // };
+  useEffect(() => {
+    setEditingVirksomhed(virksomhed);
+  }, [virksomhed]);
 
-  // useEffect(() => {
-  //   fetchTags();
-  // }, []);
-
-  // Add virksomhed to database
-  async function addVirksomhed() {
+  // Update or add virksomhed in database
+  const saveVirksomhed = async () => {
+    let data;
     try {
-      const { data: virksomhedData, error: virksomhedError } = await supabase
-        .from("virksomheder")
-        .insert([
+      let error;
+      if (mode === "edit") {
+        ({ data, error } = await supabase
+          .from("virksomheder")
+          .update({ ...editingVirksomhed })
+          .eq("id", virksomhed.id));
+        setVirksomhed(editingVirksomhed);
+      } else if (mode === "add") {
+        ({ data, error } = await supabase.from("virksomheder").insert([
           {
-            navn: virksomhed.navn,
-            cvr: virksomhed.cvr,
-            telefonnr: virksomhed.telefonnr,
-            email: virksomhed.email,
-            hjemmeside: virksomhed.hjemmeside,
-            beskrivelse: virksomhed.beskrivelse,
+            navn: editingVirksomhed.navn,
+            cvr: editingVirksomhed.cvr,
+            telefonnr: editingVirksomhed.telefonnr,
+            email: editingVirksomhed.email,
+            hjemmeside: editingVirksomhed.hjemmeside,
+            beskrivelse: editingVirksomhed.beskrivelse,
             user_id: session.user.id,
             id: id,
           },
-        ]);
-
-      if (virksomhedError) {
-        toast.error("Der skete en fejl");
-        console.error("Error adding virksomhed: ", virksomhedError);
-      } else {
-        await addTags(id);
-        setOpen(false);
-        setActiveInput(null);
+        ]));
+        setVirksomhed(editingVirksomhed);
+      }
+      if (mode === "edit") {
+        toast.success("Virksomhed redigeret");
+      }
+      if (mode === "add") {
+        router.push(`/virksomhed/${id}`);
         toast.success("Virksomhed tilføjet");
-        refreshData();
-        setVirksomhed(null);
-        setRowSelection([]);
-        setActiveInput(null);
       }
     } catch (error) {
       console.log(error);
     }
-  }
-
-  // const addTags = async (id) => {
-  //   const uniqueTags = new Set(virksomhed.tags);
-  //   for (const tag of uniqueTags) {
-  //     const { data: tagData, error: tagError } = await supabase
-  //       .from("tags")
-  //       .insert([{ value: tag, virksomhed_id: id, user_id: session.user.id }]);
-  //     if (tagError) {
-  //       console.error("Error adding new tag: ", tagError);
-  //     }
-  //   }
-  // };
-
-  // Open dialog on cmd+a
-  useKeyboardEvent("a", (event) => {
-    if (event.metaKey || event.altKey) {
-      setOpen(true);
-      setActiveInput(null);
-    }
-  });
+  };
 
   // Close dialog on escape
   useEffect(() => {
@@ -139,30 +107,29 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>
-              <Button className="" onClick={() => setOpen(true)}>
-                <IconPlus className="h-4 w-4 mr-2" />
-                Tilføj Virksomhed
-              </Button>
-            </TooltipTrigger>
-
-            <TooltipContent side="top">
-              <kbd>cmd</kbd> + <kbd>a</kbd>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        {mode === "add" ? (
+          <Button className="" onClick={() => setOpen(true)}>
+            <IconPlus className="h-4 w-4 mr-2" />
+            Tilføj Virksomhed
+          </Button>
+        ) : (
+          <Button onClick={() => setOpen(true)} size="icon" variant="outline">
+            <IconEdit className="h-4 w-4" />
+          </Button>
+        )}
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="mb-2">Tilføj Virksomhed</DialogTitle>
+          <DialogTitle className="mb-2">
+            {mode === "edit" ? "Rediger Virksomhed" : "Tilføj Virksomhed"}
+          </DialogTitle>
         </DialogHeader>
         <Input
           placeholder="Navn"
+          value={editingVirksomhed ? editingVirksomhed.navn : ""}
           onChange={(event) =>
-            setVirksomhed((prevState) => ({
+            setEditingVirksomhed((prevState) => ({
               ...prevState,
               navn: event.target.value,
             }))
@@ -172,8 +139,9 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
 
         <Textarea
           placeholder="Beskrivelse"
+          value={editingVirksomhed ? editingVirksomhed.beskrivelse : ""}
           onChange={(event) =>
-            setVirksomhed((prevState) => ({
+            setEditingVirksomhed((prevState) => ({
               ...prevState,
               beskrivelse: event.target.value,
             }))
@@ -187,8 +155,8 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
                 activeInput={activeInput}
                 setActiveInput={setActiveInput}
                 inputKey="cvr"
-                virksomhed={virksomhed}
-                setVirksomhed={setVirksomhed}
+                virksomhed={editingVirksomhed}
+                setVirksomhed={setEditingVirksomhed}
                 IconComponent={IconId}
                 placeholder="CVR"
                 autoFocus={true}
@@ -207,27 +175,27 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
                     }
                   }}
                 >
-                  {virksomhed && virksomhed.telefonnr ? (
+                  {editingVirksomhed && editingVirksomhed.telefonnr ? (
                     <IconPhone className="h-4 w-4 mr-1" />
                   ) : (
                     <IconPlus className="h-4 w-4 mr-1" />
                   )}
-                  {virksomhed && virksomhed.telefonnr
-                    ? parsePhoneNumber(virksomhed.telefonnr)
+                  {editingVirksomhed && editingVirksomhed.telefonnr
+                    ? parsePhoneNumber(editingVirksomhed.telefonnr)
                       ? parsePhoneNumber(
-                          virksomhed.telefonnr
+                          editingVirksomhed.telefonnr
                         ).formatInternational()
-                      : virksomhed.telefonnr
+                      : editingVirksomhed.telefonnr
                     : "Tlf."}
                 </Button>
               ) : (
                 <Button variant="outline" className="p-0" size="sm">
                   <PhoneInput
-                    value={virksomhed ? virksomhed.telefonnr : ""}
+                    value={editingVirksomhed ? editingVirksomhed.telefonnr : ""}
                     placeholder="Tlf."
                     className=" bg-transparent px-0 text-xs w-fit h-full pl-3  placeholder:text-xs ring-0 outline-none active:outline-none focus:outline-none tlf-input"
                     onChange={(value) =>
-                      setVirksomhed((prevState) => ({
+                      setEditingVirksomhed((prevState) => ({
                         ...prevState,
                         telefonnr: value,
                       }))
@@ -245,8 +213,8 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
                 activeInput={activeInput}
                 setActiveInput={setActiveInput}
                 inputKey="email"
-                virksomhed={virksomhed}
-                setVirksomhed={setVirksomhed}
+                virksomhed={editingVirksomhed}
+                setVirksomhed={setEditingVirksomhed}
                 IconComponent={IconMail}
                 placeholder="Email"
                 autoFocus={true}
@@ -255,8 +223,8 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
                 activeInput={activeInput}
                 setActiveInput={setActiveInput}
                 inputKey="hjemmeside"
-                virksomhed={virksomhed}
-                setVirksomhed={setVirksomhed}
+                virksomhed={editingVirksomhed}
+                setVirksomhed={setEditingVirksomhed}
                 IconComponent={IconId}
                 placeholder="Hjemmeside"
                 autoFocus={true}
@@ -264,24 +232,16 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
             </div>
             <div className="flex gap-1 flex-wrap">
               <SetStatus
-                virksomhed={virksomhed}
-                setVirksomhed={setVirksomhed}
+                virksomhed={editingVirksomhed}
+                setVirksomhed={setEditingVirksomhed}
                 activeInput={activeInput}
                 setActiveInput={setActiveInput}
               />
-              {/* <AddTag
-                virksomhed={virksomhed}
-                setVirksomhed={setVirksomhed}
-                activeInput={activeInput}
-                setActiveInput={setActiveInput}
-                tags={tags}
-                fetchTags={fetchTags}
-              /> */}
             </div>
           </div>
           <DialogClose asChild className=" place-self-end">
-            <Button type="submit" onClick={addVirksomhed}>
-              Tilføj
+            <Button type="submit" onClick={saveVirksomhed}>
+              {mode === "edit" ? "Gem" : "Tilføj"}
             </Button>
           </DialogClose>
         </div>
@@ -290,4 +250,4 @@ function AddVirksomhed({ session, setRowSelection, refreshData }) {
   );
 }
 
-export default AddVirksomhed;
+export default ManageVirksomhed;

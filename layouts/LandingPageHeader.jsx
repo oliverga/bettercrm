@@ -10,7 +10,7 @@ function LandingPageHeader({ session }) {
       <nav className="container p-12 flex gap-1 justify-between">
         <div className="flex items-center gap-2 font-medium text-2xl ">
           <IconMountain className="h-8 w-8 text-purple-500" stroke="2" />
-          Sherpa
+          <h2>Sherpa</h2>
         </div>
         <div className="flex items-center gap-2">
           {session && (

@@ -19,6 +19,17 @@ export default async function Home() {
     redirect("/");
   }
 
+  const fetchVirksomheder = async () => {
+    const { data, error } = await supabase
+      .from("virksomheder")
+      .select("*")
+      .eq("user_id", session.user.id);
+
+    console.log(data);
+  };
+
+  fetchVirksomheder();
+
   return (
     <>
       <div className="container relative mt-8">
@@ -32,7 +43,7 @@ export default async function Home() {
                 {/* <TabsTrigger value="Aktiviteter">Aktiviteter</TabsTrigger> */}
               </TabsList>
               <TabsContent value="virksomheder" className="mt-8">
-                <VirksomhedTable session={session} />
+                <VirksomhedTable session={session} d />
               </TabsContent>
               <TabsContent value="kontakter"></TabsContent>
             </Tabs>
