@@ -35,11 +35,11 @@ function RowManipulation({
 
   return (
     <div
-      className={`fixed bottom-8 max-w-7xl w-full flex justify-center fade-in-out ${
+      className={`fixed bottom-8 max-w-7xl w-full flex justify-center fade-in-out pointer-events-none  ${
         show ? "show" : ""
       }`}
     >
-      <Card className=" shadow rounded-md max-w-md w-full">
+      <Card className=" shadow rounded-md max-w-md w-full  pointer-events-auto">
         <CardContent className="p-4 flex gap-4 items-center justify-between">
           <div className="flex items-center w-full h-fit max-w-[170px] text-sm">
             <Button

@@ -13,7 +13,6 @@ import {
 } from "@tabler/icons-react";
 import { Skeleton } from "./ui/skeleton";
 import InfoButton from "./InfoButton";
-import EditVirksomhed from "./EditVirksomhed";
 import ManageVirksomhed from "./ManageVirksomhed";
 
 function VirksomhedInfo({ params, session }) {

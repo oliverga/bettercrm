@@ -39,7 +39,7 @@ import InputButton from "./InputButton";
 import SetStatus from "./SetStatus";
 import { useRouter } from "next/navigation";
 
-function ManageVirksomhed({ session, mode, virksomhed, setVirksomhed }) {
+function ManageVirksomhed({ session, mode, virksomhed, setVirksomhed, table }) {
   const supabase = createClientComponentClient();
   const [open, setOpen] = useState(false);
   const [activeInput, setActiveInput] = useState(null);
@@ -107,7 +107,9 @@ function ManageVirksomhed({ session, mode, virksomhed, setVirksomhed }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {mode === "add" ? (
+        {table === true ? (
+          <button>Rediger</button>
+        ) : mode === "add" ? (
           <Button className="" onClick={() => setOpen(true)}>
             <IconPlus className="h-4 w-4 mr-2" />
             Tilføj Virksomhed

@@ -163,7 +163,7 @@ function DataTable({ session }) {
       },
       accessorKey: "navn",
       cell: ({ row }) => (
-        <Link href={`/virksomhed/${row.original.id}`}>
+        <Link href={`/virksomhed/${row.original.id}`} className="">
           {row.getValue("Navn")}
         </Link>
       ),
@@ -187,7 +187,7 @@ function DataTable({ session }) {
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Kopier til udklipsholder</p>
+              <p>Kopier CVR til udklipsholder</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -277,10 +277,18 @@ function DataTable({ session }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {/* <DropdownMenuLabel>Handlinger</DropdownMenuLabel> */}
-              <Link href={`/virksomhed/${virksomhed.id}`}>
-                <DropdownMenuItem>Vis</DropdownMenuItem>
-              </Link>
+              <DropdownMenuItem asChild>
+                <Link href={`/virksomhed/${virksomhed.id}`}>Vis</Link>
+              </DropdownMenuItem>
+              {/* <DropdownMenuItem>
+                <ManageVirksomhed
+                  session={session}
+                  mode="edit"
+                  table={true}
+                  virksomhed={virksomhed}
+                  refreshData={refreshData}
+                />
+              </DropdownMenuItem> */}
               <DropdownMenuItem
                 onClick={() => {
                   navigator.clipboard.writeText(virksomhed.cvr);
@@ -339,9 +347,8 @@ function DataTable({ session }) {
     },
   });
 
-  // Render dashboard
   return (
-    <div className="w-full">
+    <div className="w-ful mb-10">
       <div className="flex justify-start mt-12 mb-4">
         <div className="flex gap-4">
           <TooltipProvider>
@@ -456,7 +463,7 @@ function DataTable({ session }) {
         </Table>
       </div>
       <div className="flex justify-end mt-4 items-center">
-        <div className="space-x-2">
+        <div className="space-x-2 ">
           <Button
             variant="outline"
             size="sm"
