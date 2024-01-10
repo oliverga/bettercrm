@@ -1,6 +1,6 @@
 "use client";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 
 // shadcn components import
@@ -29,13 +29,6 @@ import { Button } from "@/components/ui/button";
 
 import { Checkbox } from "@/components/ui/checkbox";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
 // tanstack table import
 import {
   ColumnDef,
@@ -52,17 +45,15 @@ import {
 
 import { toast } from "sonner";
 import {
-  IconAdjustments,
   IconCaretDown,
   IconCaretUp,
   IconCaretUpDown,
   IconColumns,
-  IconDatabaseCog,
   IconDots,
-  IconSettings,
 } from "@tabler/icons-react";
 
 import parsePhoneNumber from "libphonenumber-js";
+import ManageKontakt from "./ManageKontakt";
 
 function DataTable({ session, params }) {
   const [data, setData] = useState([]);
@@ -70,8 +61,8 @@ function DataTable({ session, params }) {
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
-
-  const [virksomhed, setVirksomhed] = useState(null);
+  const [relationer, setRelationer] = useState([]);
+  const [virksomheder, setVirksomheder] = useState([]);
 
   const supabase = createClientComponentClient();
 
@@ -129,18 +120,18 @@ function DataTable({ session, params }) {
         <Link href={`/kontakt/${row.original.id}`}>{row.getValue("Navn")}</Link>
       ),
     },
-    {
-      id: "Titel",
-      header: "Titel",
-      accessorKey: "titel",
-      cell: ({ row }) => {
-        const virksomhedId = params.id;
-        const relation = row.original.virksomhed_relationer.find(
-          (relation) => relation.virksomhed === virksomhedId
-        );
-        return relation ? relation.titel : null;
-      },
-    },
+    // {
+    //   id: "Titel",
+    //   header: "Titel",
+    //   accessorKey: "titel",
+    //   cell: ({ row }) => {
+    //     const virksomhedId = params.id;
+    //     const relation = row.original.virksomhed_relationer.find(
+    //       (relation) => relation.virksomhed === virksomhedId
+    //     );
+    //     return relation ? relation.titel : null;
+    //   },
+    // },
     {
       id: "Telefon",
       header: "Telefon",
@@ -168,7 +159,49 @@ function DataTable({ session, params }) {
         </Link>
       ),
     },
-
+    {
+      id: "Relationer",
+      header: "Relationer",
+      accessorKey: "relationer",
+      cell: ({ row }) => {
+        const kontakt = row.original;
+        const relations = relationer.filter(
+          (relation) => relation.kontakt_from === kontakt.id
+        );
+        console.log(relations);
+        return relations.length > 0 ? (
+          <ul className="space-y-1">
+            {relations.slice(0, 2).map((relation, index) => (
+              <li key={index}>
+                <span className=" text-muted-foreground">{`${relation.relation} hos `}</span>
+                {virksomheder.find((v) => v.id === relation.virksomhed_to) ? (
+                  <Link
+                    href={`/virksomhed/${relation.virksomhed_to}`}
+                    className=""
+                  >
+                    {
+                      virksomheder.find((v) => v.id === relation.virksomhed_to)
+                        .navn
+                    }
+                  </Link>
+                ) : (
+                  relation.virksomhed_to
+                )}
+              </li>
+            ))}
+            {relations.length > 3 && (
+              <li>
+                <span className=" text-muted-foreground text-xs">{`+${
+                  relations.length - 2
+                } ${
+                  relations.length - 2 > 1 ? "relationer" : "relation"
+                }`}</span>
+              </li>
+            )}
+          </ul>
+        ) : null;
+      },
+    },
     {
       id: "Dato Tilføjet",
       header: ({ column }) => {
@@ -227,7 +260,7 @@ function DataTable({ session, params }) {
                     console.error("Error deleting row:", error);
                   } else {
                     toast("Kontakt slettet");
-                    refreshData();
+                    fetchKontakter();
                   }
                 }}
               >
@@ -240,36 +273,35 @@ function DataTable({ session, params }) {
     },
   ];
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const { id } = params;
-      const response = await supabase
-        .from("virksomheder")
-        .select("*")
-        .eq("id", id);
-      console.log(response.data);
-      setVirksomhed(response.data[0]);
-      getPersonData(response.data[0].id);
-    };
-    fetchData();
-  }, [params, supabase]);
-
-  const getPersonData = async (virksomhedId) => {
+  const fetchKontakter = async () => {
     const { data, error } = await supabase
       .from("kontakter")
       .select("*")
       .order("created_at", { ascending: false });
-    console.log(data);
-
-    const filteredData = data.filter((person) =>
-      person.virksomhed_relationer.some(
-        (relation) => relation.virksomhed === virksomhedId
-      )
-    );
-
-    setData(filteredData);
-    console.log(filteredData);
+    setData(data);
   };
+
+  const fetchRelationer = async () => {
+    const { data, error } = await supabase.from("relationer").select("*");
+    setRelationer(data);
+  };
+
+  const fetchVirksomheder = async () => {
+    const { data, error } = await supabase.from("virksomheder").select("*");
+    setVirksomheder(data);
+  };
+
+  useEffect(() => {
+    fetchRelationer();
+  }, []);
+
+  useEffect(() => {
+    fetchKontakter();
+  }, []);
+
+  useEffect(() => {
+    fetchVirksomheder();
+  }, []);
 
   // Define table
   const table = useReactTable({
@@ -297,21 +329,6 @@ function DataTable({ session, params }) {
     <div className="w-full">
       <div className="flex justify-start mt-12 mb-4">
         <div className="flex gap-4">
-          {/* <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <Button variant="outline" size="icon" asChild>
-                  <Link href="/database-indstillinger">
-                    <IconDatabaseCog className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </TooltipTrigger>
-
-              <TooltipContent side="top" align="start">
-                <p>Database Indstillinger</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider> */}
           <Input
             placeholder="Søg i kontakter..."
             value={
@@ -324,13 +341,16 @@ function DataTable({ session, params }) {
             }
             className="max-w-sm"
           />
-          {/* 
-          <AddVirksomhed
-            setData={setData}
+          <ManageKontakt
             session={session}
-            setRowSelection={setRowSelection}
-          /> */}
+            mode="add"
+            refreshData={() => {
+              fetchKontakter();
+            }}
+            table={table}
+          />
         </div>
+
         <DropdownMenu closeOnSelect={false} clas>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">

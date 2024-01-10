@@ -19,13 +19,12 @@ export default async function Home() {
     <>
       <LandingPageHeader session={session} />
       <main className="container min-h-screen flex flex-col pt-64 gap-12 items-center">
-        <h1 className="text-8xl font-semibold text-center leading-tighter">
+        <h1 className="text-8xl font-bold text-center leading-tighter">
           CRM, simpelthen.
         </h1>
         <p className="text-lg text-muted-foreground text-center ">
           Hold styr på dine kunder, og få overblik over dine kontakter.
         </p>
-
         <Button asChild variant="">
           {session ? (
             <Link href="/dashboard">Gå til dit dashboard</Link>

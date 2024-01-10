@@ -34,8 +34,12 @@ function Header({ session }) {
           </Avatar>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Indstillinger</DropdownMenuLabel>
           <DropdownMenuItem asChild>
-            <Link href="/indstillinger">Indstillinger</Link>
+            <Link href="/database-indstillinger">Database</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/indstillinger">Bruger</Link>
           </DropdownMenuItem>
           <DropdownMenuItem>Abonnement</DropdownMenuItem>
           <DropdownMenuSeparator />

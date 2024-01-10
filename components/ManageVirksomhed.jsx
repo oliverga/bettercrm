@@ -25,21 +25,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 import {
-  IconCircle,
   IconId,
   IconMail,
   IconPhone,
   IconPlus,
-  IconTag,
-  IconLink,
   IconEdit,
+  IconBuilding,
 } from "@tabler/icons-react";
-import { useKeyboardEvent } from "@/lib/hooks/useKeyboardEvent";
+
 import InputButton from "./InputButton";
 import SetStatus from "./SetStatus";
 import { useRouter } from "next/navigation";
 
-function ManageVirksomhed({ session, mode, virksomhed, setVirksomhed, table }) {
+export default function ManageVirksomhed({
+  session,
+  mode,
+  virksomhed,
+  setVirksomhed,
+  table,
+  refreshData,
+}) {
   const supabase = createClientComponentClient();
   const [open, setOpen] = useState(false);
   const [activeInput, setActiveInput] = useState(null);
@@ -49,20 +54,37 @@ function ManageVirksomhed({ session, mode, virksomhed, setVirksomhed, table }) {
   const router = useRouter();
 
   useEffect(() => {
-    setEditingVirksomhed(virksomhed);
-  }, [virksomhed]);
+    if (open) {
+      setEditingVirksomhed(virksomhed);
+    }
+  }, [virksomhed, open]);
+
+  useEffect(() => {
+    if (editingVirksomhed && editingVirksomhed.telefonnr === undefined) {
+      setEditingVirksomhed({ ...editingVirksomhed, telefonnr: "" });
+    }
+  }, [editingVirksomhed]);
 
   // Update or add virksomhed in database
   const saveVirksomhed = async () => {
     let data;
+    let error;
     try {
-      let error;
       if (mode === "edit") {
         ({ data, error } = await supabase
           .from("virksomheder")
-          .update({ ...editingVirksomhed })
-          .eq("id", virksomhed.id));
-        setVirksomhed(editingVirksomhed);
+          .update({
+            navn: editingVirksomhed.navn,
+            cvr: editingVirksomhed.cvr,
+            telefonnr: editingVirksomhed.telefonnr,
+            email: editingVirksomhed.email,
+            hjemmeside: editingVirksomhed.hjemmeside,
+            beskrivelse: editingVirksomhed.beskrivelse,
+          })
+          .eq("id", editingVirksomhed.id));
+
+        refreshData();
+        setActiveInput(null);
       } else if (mode === "add") {
         ({ data, error } = await supabase.from("virksomheder").insert([
           {
@@ -76,7 +98,8 @@ function ManageVirksomhed({ session, mode, virksomhed, setVirksomhed, table }) {
             id: id,
           },
         ]));
-        setVirksomhed(editingVirksomhed);
+
+        setActiveInput(null);
       }
       if (mode === "edit") {
         toast.success("Virksomhed redigeret");
@@ -123,7 +146,8 @@ function ManageVirksomhed({ session, mode, virksomhed, setVirksomhed, table }) {
 
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="mb-2">
+          <DialogTitle className="mb-2 flex gap-2 items-center">
+            <IconBuilding className="h-6 w-6" />
             {mode === "edit" ? "Rediger Virksomhed" : "Tilføj Virksomhed"}
           </DialogTitle>
         </DialogHeader>
@@ -193,7 +217,11 @@ function ManageVirksomhed({ session, mode, virksomhed, setVirksomhed, table }) {
               ) : (
                 <Button variant="outline" className="p-0" size="sm">
                   <PhoneInput
-                    value={editingVirksomhed ? editingVirksomhed.telefonnr : ""}
+                    value={
+                      editingVirksomhed && editingVirksomhed.telefonnr
+                        ? editingVirksomhed.telefonnr
+                        : ""
+                    }
                     placeholder="Tlf."
                     className=" bg-transparent px-0 text-xs w-fit h-full pl-3  placeholder:text-xs ring-0 outline-none active:outline-none focus:outline-none tlf-input"
                     onChange={(value) =>
@@ -251,5 +279,3 @@ function ManageVirksomhed({ session, mode, virksomhed, setVirksomhed, table }) {
     </Dialog>
   );
 }
-
-export default ManageVirksomhed;

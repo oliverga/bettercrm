@@ -228,7 +228,7 @@ function DataTable({ session }) {
       cell: ({ row }) => {
         const website = row.getValue("Hjemmeside");
         const websiteWithoutHttps = website
-          ? website.replace("https://", "")
+          ? website.replace(/(http:\/\/|https:\/\/)/, "")
           : "";
         return website ? (
           <a href={`https://${websiteWithoutHttps}`}>{websiteWithoutHttps}</a>
@@ -271,7 +271,7 @@ function DataTable({ session }) {
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
+              <Button variant="ghost" className="h-8 w-8 p-0 ">
                 <span className="sr-only">Åben Menu</span>
                 <IconDots className="h-4 w-4" />
               </Button>
@@ -280,15 +280,7 @@ function DataTable({ session }) {
               <DropdownMenuItem asChild>
                 <Link href={`/virksomhed/${virksomhed.id}`}>Vis</Link>
               </DropdownMenuItem>
-              {/* <DropdownMenuItem>
-                <ManageVirksomhed
-                  session={session}
-                  mode="edit"
-                  table={true}
-                  virksomhed={virksomhed}
-                  refreshData={refreshData}
-                />
-              </DropdownMenuItem> */}
+
               <DropdownMenuItem
                 onClick={() => {
                   navigator.clipboard.writeText(virksomhed.cvr);
@@ -351,21 +343,6 @@ function DataTable({ session }) {
     <div className="w-ful mb-10">
       <div className="flex justify-start mt-12 mb-4">
         <div className="flex gap-4">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <Button variant="outline" size="icon" asChild>
-                  <Link href="/database-indstillinger">
-                    <IconDatabaseCog className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </TooltipTrigger>
-
-              <TooltipContent side="top">
-                <p>Database Indstillinger</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
           <Input
             placeholder="Søg i virksomheder..."
             value={
@@ -378,11 +355,7 @@ function DataTable({ session }) {
             }
             className="max-w-sm"
           />
-          <ManageVirksomhed
-            session={session}
-            mode="add"
-            refreshData={refreshData}
-          />
+          <ManageVirksomhed session={session} mode="add" />
         </div>
         <DropdownMenu closeOnSelect={false} clas>
           <DropdownMenuTrigger asChild>

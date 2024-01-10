@@ -14,6 +14,8 @@ import {
 import { Skeleton } from "./ui/skeleton";
 import InfoButton from "./InfoButton";
 import ManageVirksomhed from "./ManageVirksomhed";
+import { useRouter } from "next/router";
+import { useCallback } from "react";
 
 function VirksomhedInfo({ params, session }) {
   const supabase = createClientComponentClient();
@@ -21,18 +23,19 @@ function VirksomhedInfo({ params, session }) {
   const [activeInput, setActiveInput] = useState(null);
   const [editVirksomhedOpen, setEditVirksomhedOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const { id } = params;
-      const response = await supabase
-        .from("virksomheder")
-        .select("*")
-        .eq("id", id);
-      console.log(response.data);
-      setVirksomhed(response.data[0]);
-    };
-    fetchData();
+  const fetchData = useCallback(async () => {
+    const { id } = params;
+    const response = await supabase
+      .from("virksomheder")
+      .select("*")
+      .eq("id", id);
+    console.log(response.data);
+    setVirksomhed(response.data[0]);
   }, [params, supabase]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   if (!virksomhed) {
     return (
