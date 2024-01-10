@@ -79,6 +79,7 @@ export default function ManageVirksomhed({
             email: editingVirksomhed.email,
             hjemmeside: editingVirksomhed.hjemmeside,
             beskrivelse: editingVirksomhed.beskrivelse,
+            changed_at: new Date(),
           })
           .eq("id", editingVirksomhed.id));
 
@@ -162,17 +163,27 @@ export default function ManageVirksomhed({
           }
           className="max-w-xs"
         />
-
-        <Textarea
-          placeholder="Beskrivelse"
-          value={editingVirksomhed ? editingVirksomhed.beskrivelse : ""}
-          onChange={(event) =>
-            setEditingVirksomhed((prevState) => ({
-              ...prevState,
-              beskrivelse: event.target.value,
-            }))
-          }
-        />
+        {activeInput === "beskrivelse" ||
+        (editingVirksomhed && editingVirksomhed.beskrivelse !== null) ? (
+          <Textarea
+            placeholder="Beskrivelse"
+            value={editingVirksomhed ? editingVirksomhed.beskrivelse : ""}
+            onChange={(event) =>
+              setEditingVirksomhed((prevState) => ({
+                ...prevState,
+                beskrivelse: event.target.value,
+              }))
+            }
+          />
+        ) : (
+          <Button
+            variant="ghost"
+            className="place-self-start text-sm"
+            onClick={() => setActiveInput("beskrivelse")}
+          >
+            <IconPlus className="w-4 h-4 mr-1 mb-0.5" /> Beskrivelse
+          </Button>
+        )}
 
         <div className="flex justify-between items-start ">
           <div className="flex flex-col gap-1 flex-wrap ">

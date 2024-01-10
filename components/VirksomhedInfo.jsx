@@ -37,7 +37,10 @@ function VirksomhedInfo({ params, session }) {
   }, [refreshData]);
 
   const updateLocalStorage = useCallback(async () => {
-    const { data, error } = await supabase.from("virksomheder").select("*");
+    const { data, error } = await supabase
+      .from("virksomheder")
+      .select("*")
+      .order("created_at", { ascending: false });
     localStorage.setItem("virksomheder", JSON.stringify(data));
   }, [supabase]);
 

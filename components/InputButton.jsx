@@ -32,7 +32,7 @@ function InputButton({
       {virksomhed && virksomhed[inputKey] ? (
         <IconComponent className="h-4 w-4 mr-1" />
       ) : (
-        <IconPlus className="h-4 w-4 mr-1" />
+        <IconPlus className="h-4 w-4 mr-1 mb-0.5" />
       )}
       {virksomhed && virksomhed[inputKey] ? virksomhed[inputKey] : placeholder}
     </Button>

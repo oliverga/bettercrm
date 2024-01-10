@@ -69,10 +69,15 @@ import {
 
 function DataTable({ session }) {
   const [data, setData] = useState([]);
-  const [sorting, setSorting] = useState([]);
+  const [sorting, setSorting] = useState(() => {
+    const savedSorting = localStorage.getItem("virksomhedSorting");
+    return savedSorting ? JSON.parse(savedSorting) : [];
+  });
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState(() => {
-    const savedColumnVisibility = localStorage.getItem("columnVisibility");
+    const savedColumnVisibility = localStorage.getItem(
+      "virksomhedColumnVisibility"
+    );
     return savedColumnVisibility ? JSON.parse(savedColumnVisibility) : {};
   });
   const [rowSelection, setRowSelection] = useState({});
@@ -115,8 +120,16 @@ function DataTable({ session }) {
 
   // Save column visibility to local storage
   useEffect(() => {
-    localStorage.setItem("columnVisibility", JSON.stringify(columnVisibility));
+    localStorage.setItem(
+      "virksomhedColumnVisibility",
+      JSON.stringify(columnVisibility)
+    );
   }, [columnVisibility]);
+
+  // save sorting to local storage
+  useEffect(() => {
+    localStorage.setItem("virksomhedSorting", JSON.stringify(sorting));
+  }, [sorting]);
 
   // define table columns
   const columns = [
@@ -214,9 +227,14 @@ function DataTable({ session }) {
         }
         const phoneNumber = parsePhoneNumber(row.getValue("Telefon"));
         return phoneNumber ? (
-          <a href={phoneNumber.getURI()}>{phoneNumber.formatInternational()}</a>
+          <a href={phoneNumber.getURI()} className="whitespace-nowrap">
+            {phoneNumber.formatInternational()}
+          </a>
         ) : (
-          <a href={`tel:${row.getValue("Telefon")}`}>
+          <a
+            href={`tel:${row.getValue("Telefon")}`}
+            className="whitespace-nowrap"
+          >
             {row.getValue("Telefon")}
           </a>
         );
@@ -270,6 +288,42 @@ function DataTable({ session }) {
       cell: ({ row }) => {
         const date = row.getValue("Dato Tilføjet");
         return date ? new Date(date).toLocaleDateString() : null;
+      },
+      enableSorting: true,
+    },
+    {
+      id: "Sidst Ændret",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="-ml-4"
+          >
+            Sidst Ændret
+            {column.getIsSorted() === "asc" ? (
+              <IconCaretUp className="h-4 w-4 ml-1" />
+            ) : column.getIsSorted() === "desc" ? (
+              <IconCaretDown className="h-4 w-4 ml-1" />
+            ) : (
+              <IconCaretUpDown className="h-4 w-4 ml-1" />
+            )}
+          </Button>
+        );
+      },
+      accessorKey: "changed_at",
+      cell: ({ row }) => {
+        const date = row.getValue("Sidst Ændret");
+        return date
+          ? new Date(date).toLocaleString(undefined, {
+              day: "numeric",
+              month: "numeric",
+              year: "numeric",
+
+              hour: "numeric",
+              minute: "numeric",
+            })
+          : null;
       },
       enableSorting: true,
     },
