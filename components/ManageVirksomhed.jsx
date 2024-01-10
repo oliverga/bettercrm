@@ -41,7 +41,6 @@ export default function ManageVirksomhed({
   session,
   mode,
   virksomhed,
-  setVirksomhed,
   table,
   refreshData,
 }) {
@@ -83,11 +82,11 @@ export default function ManageVirksomhed({
           })
           .eq("id", editingVirksomhed.id));
 
-        refreshData();
         setActiveInput(null);
       } else if (mode === "add") {
         ({ data, error } = await supabase.from("virksomheder").insert([
           {
+            id: id,
             navn: editingVirksomhed.navn,
             cvr: editingVirksomhed.cvr,
             telefonnr: editingVirksomhed.telefonnr,
@@ -95,21 +94,22 @@ export default function ManageVirksomhed({
             hjemmeside: editingVirksomhed.hjemmeside,
             beskrivelse: editingVirksomhed.beskrivelse,
             user_id: session.user.id,
-            id: id,
           },
         ]));
 
         setActiveInput(null);
       }
       if (mode === "edit") {
-        toast.success("Virksomhed redigeret");
+        toast.success("Virksomhed opdateret");
+        refreshData();
       }
       if (mode === "add") {
         router.push(`/virksomhed/${id}`);
+        refreshData("refresh");
         toast.success("Virksomhed tilføjet");
       }
     } catch (error) {
-      console.log(error);
+      toast.error(error.message);
     }
   };
 

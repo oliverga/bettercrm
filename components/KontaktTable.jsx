@@ -161,8 +161,9 @@ function DataTable({ session, params }) {
     },
     {
       id: "Relationer",
-      header: "Relationer",
       accessorKey: "relationer",
+      header: "Relationer",
+
       cell: ({ row }) => {
         const kontakt = row.original;
         const relations = relationer.filter(
@@ -185,7 +186,7 @@ function DataTable({ session, params }) {
                     }
                   </Link>
                 ) : (
-                  relation.virksomhed_to
+                  ""
                 )}
               </li>
             ))}
@@ -279,28 +280,39 @@ function DataTable({ session, params }) {
       .select("*")
       .order("created_at", { ascending: false });
     setData(data);
+    localStorage.setItem("kontakter", JSON.stringify(data));
   };
 
   const fetchRelationer = async () => {
     const { data, error } = await supabase.from("relationer").select("*");
     setRelationer(data);
+    localStorage.setItem("relationer", JSON.stringify(data));
   };
 
   const fetchVirksomheder = async () => {
     const { data, error } = await supabase.from("virksomheder").select("*");
     setVirksomheder(data);
+    localStorage.setItem("virksomheder", JSON.stringify(data));
+  };
+
+  const fetchData = async () => {
+    const savedKontakter = localStorage.getItem("kontakter");
+    const savedRelationer = localStorage.getItem("relationer");
+    const savedVirksomheder = localStorage.getItem("virksomheder");
+
+    if (savedKontakter && savedRelationer && savedVirksomheder) {
+      setData(JSON.parse(savedKontakter));
+      setRelationer(JSON.parse(savedRelationer));
+      setVirksomheder(JSON.parse(savedVirksomheder));
+    } else {
+      await fetchKontakter();
+      await fetchRelationer();
+      await fetchVirksomheder();
+    }
   };
 
   useEffect(() => {
-    fetchRelationer();
-  }, []);
-
-  useEffect(() => {
-    fetchKontakter();
-  }, []);
-
-  useEffect(() => {
-    fetchVirksomheder();
+    fetchData();
   }, []);
 
   // Define table
@@ -345,7 +357,7 @@ function DataTable({ session, params }) {
             session={session}
             mode="add"
             refreshData={() => {
-              fetchKontakter();
+              fetchData();
             }}
             table={table}
           />

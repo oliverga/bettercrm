@@ -29,7 +29,7 @@ function RowManipulation({
     } else {
       toast.success("Virksomheder slettet");
       setRowSelection([]);
-      refreshData();
+      refreshData("refresh");
     }
   }
 

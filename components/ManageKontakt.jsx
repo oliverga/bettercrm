@@ -34,8 +34,9 @@ export default function ManageKontakt({
   session,
   mode,
   kontakt,
-  setKontakt,
   table,
+  refreshData,
+  virksomhed,
 }) {
   const supabase = createClientComponentClient();
   const [open, setOpen] = useState(false);
@@ -50,41 +51,51 @@ export default function ManageKontakt({
     }
   }, [kontakt, open]);
 
+  useEffect(() => {
+    if (editingKontakt && editingKontakt.telefonnr === undefined) {
+      setEditingKontakt({ ...editingKontakt, telefonnr: "" });
+    }
+  }, [editingKontakt]);
+
   const saveKontakt = async () => {
     let data;
+    let error;
     try {
       if (mode === "edit") {
-        const { data: kontakt, error } = await supabase
+        ({ data, error } = await supabase
           .from("kontakter")
           .update({
             navn: editingKontakt.navn,
             email: editingKontakt.email,
             telefonnr: editingKontakt.telefon,
-            user_id: session.user.id,
+            beskrivelse: editingKontakt.beskrivelse,
           })
-          .eq("id", Kontakt.id);
-
-        data = kontakt;
-      } else {
-        const { data: kontakt, error } = await supabase
-          .from("kontakter")
-          .insert([
-            {
-              id: id,
-              navn: editingKontakt.navn,
-              email: editingKontakt.email,
-              telefonnr: editingKontakt.telefon,
-              user_id: session.user.id,
-            },
-          ]);
-        data = kontakt[0];
+          .eq("id", editingKontakt.id));
+        refreshData();
+        setActiveInput(null);
+      } else if (mode === "add") {
+        ({ data, error } = await supabase.from("kontakter").insert([
+          {
+            id: id,
+            navn: editingKontakt.navn,
+            email: editingKontakt.email,
+            telefonnr: editingKontakt.telefonnr,
+            beskrivelse: editingKontakt.beskrivelse,
+            user_id: session.user.id,
+          },
+        ]));
+        setActiveInput(null);
+        refreshData();
       }
-      setKontakt(data);
-      setOpen(false);
-      toast.success("Kontakt gemt");
+      if (mode === "edit") {
+        toast.success("Kontakt opdateret");
+      } else if (mode === "add") {
+        toast.success("Kontakt tilføjet");
+      }
     } catch (error) {
-      toast.error("Noget gik galt");
+      toast.error(error.message);
     }
+    setOpen(false);
   };
 
   return (

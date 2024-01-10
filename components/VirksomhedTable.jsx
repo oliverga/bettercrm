@@ -1,6 +1,6 @@
 "use client";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import parsePhoneNumber from "libphonenumber-js";
 
@@ -81,26 +81,37 @@ function DataTable({ session }) {
 
   const supabase = createClientComponentClient();
 
+  const refreshData = useCallback(
+    async (refreshMode) => {
+      const localData = JSON.parse(localStorage.getItem("virksomheder"));
+      if (
+        localData === null ||
+        localData === undefined ||
+        refreshMode === "refresh"
+      ) {
+        const { data, error } = await supabase
+          .from("virksomheder")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          toast.error("Der skete en fejl", error.message);
+        } else {
+          setData(data);
+          setRowSelection([]);
+          localStorage.setItem("virksomheder", JSON.stringify(data));
+        }
+      } else {
+        setData(localData);
+      }
+    },
+    [supabase]
+  );
+
   // Fetch data from database on load
   useEffect(() => {
     refreshData();
-  }, []);
-
-  async function refreshData() {
-    if (session && session.user) {
-      const { data, error } = await supabase
-        .from("virksomheder")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) {
-        console.error("Error fetching data:", error);
-        toast.error("Der skete en fejl");
-      } else {
-        setData(data);
-        setRowSelection([]);
-      }
-    }
-  }
+  }, [refreshData]);
 
   // Save column visibility to local storage
   useEffect(() => {
@@ -301,7 +312,7 @@ function DataTable({ session }) {
                     console.error("Error deleting row:", error);
                   } else {
                     toast("Virksomhed slettet");
-                    refreshData();
+                    refreshData("refresh");
                   }
                 }}
               >
@@ -355,7 +366,11 @@ function DataTable({ session }) {
             }
             className="max-w-sm"
           />
-          <ManageVirksomhed session={session} mode="add" />
+          <ManageVirksomhed
+            session={session}
+            mode="add"
+            refreshData={refreshData}
+          />
         </div>
         <DropdownMenu closeOnSelect={false} clas>
           <DropdownMenuTrigger asChild>

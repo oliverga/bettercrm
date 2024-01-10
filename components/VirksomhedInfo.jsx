@@ -21,9 +21,8 @@ function VirksomhedInfo({ params, session }) {
   const supabase = createClientComponentClient();
   const [virksomhed, setVirksomhed] = useState(null);
   const [activeInput, setActiveInput] = useState(null);
-  const [editVirksomhedOpen, setEditVirksomhedOpen] = useState(false);
 
-  const fetchData = useCallback(async () => {
+  const refreshData = useCallback(async () => {
     const { id } = params;
     const response = await supabase
       .from("virksomheder")
@@ -34,8 +33,17 @@ function VirksomhedInfo({ params, session }) {
   }, [params, supabase]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    refreshData();
+  }, [refreshData]);
+
+  const updateLocalStorage = useCallback(async () => {
+    const { data, error } = await supabase.from("virksomheder").select("*");
+    localStorage.setItem("virksomheder", JSON.stringify(data));
+  }, [supabase]);
+
+  useEffect(() => {
+    updateLocalStorage();
+  }, [virksomhed, updateLocalStorage]);
 
   if (!virksomhed) {
     return (
@@ -56,9 +64,7 @@ function VirksomhedInfo({ params, session }) {
             mode="edit"
             virksomhed={virksomhed}
             setVirksomhed={setVirksomhed}
-            refreshData={() => {
-              fetchData();
-            }}
+            refreshData={refreshData}
           />
         </div>
         <div className="flex flex-wrap gap-1 max-w-xs">
