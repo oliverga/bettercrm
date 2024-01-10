@@ -13,7 +13,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { IconTag, IconCheck, IconCircle } from "@tabler/icons-react";
+import {
+  IconTag,
+  IconCheck,
+  IconCircle,
+  IconCircleDotted,
+} from "@tabler/icons-react";
 
 import { useEffect, useState } from "react";
 
@@ -30,8 +35,10 @@ function SetStatus({ virksomhed, setVirksomhed, activeInput, setActiveInput }) {
           size="sm"
           onClick={() => setActiveInput("status")}
         >
-          <IconCircle className="h-4 w-4 mr-1" />
-          Status
+          <IconCircleDotted className="h-4 w-4 mr-1" />
+          <p className="translate-y-[1px]">
+            {virksomhed && virksomhed.status ? virksomhed.status : "Status"}
+          </p>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0" align="start">
@@ -43,7 +50,7 @@ function SetStatus({ virksomhed, setVirksomhed, activeInput, setActiveInput }) {
               onSelect={() => {
                 setVirksomhed((prevVirksomhed) => ({
                   ...prevVirksomhed,
-                  status: "aktiv",
+                  status: "Aktiv",
                 }));
                 setOpen(false);
               }}

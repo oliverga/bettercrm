@@ -48,70 +48,77 @@ function VirksomhedInfo({ params, session }) {
     updateLocalStorage();
   }, [virksomhed, updateLocalStorage]);
 
-  if (!virksomhed) {
-    return (
-      <div className="mt-12 flex flex-col md:flex-row gap-4 mx-auto min-h-[120px]">
-        <Skeleton className="max-w-[140px] w-full h-[36px]" />
-      </div>
-    );
-  }
-
   return (
     <section className="mt-12 flex flex-col md:flex-row gap-4 mx-auto">
       <div className="flex flex-col gap-4 w-fit min-h-[120px]">
-        <div className="flex items-center gap-3">
-          <IconBuilding className="h-6 w-6" />
-          <h1 className="text-xl">{virksomhed.navn}</h1>
-          <ManageVirksomhed
-            session={session}
-            mode="edit"
-            virksomhed={virksomhed}
-            setVirksomhed={setVirksomhed}
-            refreshData={refreshData}
-          />
-        </div>
-        <div className="flex flex-wrap gap-1 max-w-xs">
-          <InfoButton
-            activeInput={activeInput}
-            setActiveInput={setActiveInput}
-            inputKey="cvr"
-            virksomhed={virksomhed}
-            setVirksomhed={setVirksomhed}
-            IconComponent={IconId}
-            placeholder="CVR"
-            autoFocus={true}
-          />
-          <InfoButton
-            activeInput={activeInput}
-            setActiveInput={setActiveInput}
-            inputKey="hjemmeside"
-            virksomhed={virksomhed}
-            setVirksomhed={setVirksomhed}
-            IconComponent={IconLink}
-            placeholder="Hjemmeside"
-            autoFocus={true}
-          />
-          <InfoButton
-            activeInput={activeInput}
-            setActiveInput={setActiveInput}
-            inputKey="telefonnr"
-            virksomhed={virksomhed}
-            setVirksomhed={setVirksomhed}
-            IconComponent={IconPhone}
-            placeholder="Tlf"
-            autoFocus={true}
-          />
+        {virksomhed ? (
+          <div className="flex items-center gap-3">
+            <IconBuilding className="h-6 w-6" />
+            <h1 className="text-xl">{virksomhed.navn}</h1>
+            <ManageVirksomhed
+              session={session}
+              mode="edit"
+              virksomhed={virksomhed}
+              setVirksomhed={setVirksomhed}
+              refreshData={refreshData}
+            />
+          </div>
+        ) : (
+          <Skeleton className="w-[140px] h-[36px]" />
+        )}
 
-          <InfoButton
-            activeInput={activeInput}
-            setActiveInput={setActiveInput}
-            inputKey="email"
-            virksomhed={virksomhed}
-            setVirksomhed={setVirksomhed}
-            IconComponent={IconMail}
-            placeholder="Email"
-            autoFocus={true}
-          />
+        <div className="flex flex-wrap gap-1 max-w-xs">
+          {virksomhed ? (
+            <>
+              <InfoButton
+                activeInput={activeInput}
+                setActiveInput={setActiveInput}
+                inputKey="cvr"
+                virksomhed={virksomhed}
+                setVirksomhed={setVirksomhed}
+                IconComponent={IconId}
+                placeholder="CVR"
+                autoFocus={true}
+              />
+              <InfoButton
+                activeInput={activeInput}
+                setActiveInput={setActiveInput}
+                inputKey="hjemmeside"
+                virksomhed={virksomhed}
+                setVirksomhed={setVirksomhed}
+                IconComponent={IconLink}
+                placeholder="Hjemmeside"
+                autoFocus={true}
+              />
+              <InfoButton
+                activeInput={activeInput}
+                setActiveInput={setActiveInput}
+                inputKey="telefonnr"
+                virksomhed={virksomhed}
+                setVirksomhed={setVirksomhed}
+                IconComponent={IconPhone}
+                placeholder="Tlf"
+                autoFocus={true}
+              />
+
+              <InfoButton
+                activeInput={activeInput}
+                setActiveInput={setActiveInput}
+                inputKey="email"
+                virksomhed={virksomhed}
+                setVirksomhed={setVirksomhed}
+                IconComponent={IconMail}
+                placeholder="Email"
+                autoFocus={true}
+              />
+            </>
+          ) : (
+            <>
+              <Skeleton className="w-[120px] h-[32px]" />
+              <Skeleton className="w-[112px] h-[32px]" />
+              <Skeleton className="w-[146px] h-[32px]" />
+            </>
+          )}
         </div>
         {/* <div>
           {tags ? (
@@ -126,7 +133,9 @@ function VirksomhedInfo({ params, session }) {
         </div> */}
       </div>
       <div className="max-w-xs text-sm text-muted-foreground self-end">
-        <p>{virksomhed.beskrivelse}</p>
+        <p>
+          {virksomhed && virksomhed.beskrivelse ? virksomhed.beskrivelse : null}
+        </p>
       </div>
     </section>
   );

@@ -7,7 +7,7 @@ import { IconChevronLeft } from "@tabler/icons-react";
 
 import { cookies } from "next/headers";
 import VirksomhedInfo from "@/components/VirksomhedInfo";
-import KontaktTable from "@/components/KontaktTable";
+import KontaktTableSpec from "@/components/KontaktTableSpec";
 
 export default async function Page({ params }) {
   const cookieStore = cookies();
@@ -30,7 +30,7 @@ export default async function Page({ params }) {
             </Button>
           </div>
           <VirksomhedInfo params={params} session={session} />
-          <KontaktTable params={params} session={session} />
+          <KontaktTableSpec params={params} session={session} />
         </main>
       </div>
     </>

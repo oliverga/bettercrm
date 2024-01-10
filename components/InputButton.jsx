@@ -19,7 +19,7 @@ function InputButton({
   return activeInput !== inputKey ? (
     <Button
       variant="outline"
-      className="w-fit"
+      className="w-fit flex items-center justify-center gap-2"
       size="sm"
       onClick={() => setActiveInput(inputKey)}
       onKeyDown={(event) => {
@@ -30,11 +30,15 @@ function InputButton({
       }}
     >
       {virksomhed && virksomhed[inputKey] ? (
-        <IconComponent className="h-4 w-4 mr-1" />
+        <IconComponent className="h-4 w-4" />
       ) : (
-        <IconPlus className="h-4 w-4 mr-1 mb-0.5" />
+        <IconPlus className="h-4 w-4" />
       )}
-      {virksomhed && virksomhed[inputKey] ? virksomhed[inputKey] : placeholder}
+      <p className=" translate-y-[1px]">
+        {virksomhed && virksomhed[inputKey]
+          ? virksomhed[inputKey]
+          : placeholder}
+      </p>
     </Button>
   ) : (
     <Button variant="outline" className="p-0" size="sm">

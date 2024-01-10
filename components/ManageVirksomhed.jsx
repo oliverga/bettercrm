@@ -162,12 +162,15 @@ export default function ManageVirksomhed({
             }))
           }
           className="max-w-xs"
+          onclick={() => setActiveInput("navn")}
         />
         {activeInput === "beskrivelse" ||
-        (editingVirksomhed && editingVirksomhed.beskrivelse !== null) ? (
+        (editingVirksomhed && editingVirksomhed.beskrivelse !== "") ? (
           <Textarea
             placeholder="Beskrivelse"
-            value={editingVirksomhed ? editingVirksomhed.beskrivelse : ""}
+            value={
+              editingVirksomhed.beskrivelse ? editingVirksomhed.beskrivelse : ""
+            }
             onChange={(event) =>
               setEditingVirksomhed((prevState) => ({
                 ...prevState,
@@ -176,13 +179,14 @@ export default function ManageVirksomhed({
             }
           />
         ) : (
-          <Button
-            variant="ghost"
-            className="place-self-start text-sm"
+          <button
+            variant="link"
+            className="place-self-start flex gap-1 items-center text-sm py-1 px-2 rounded outline outline-1 outline-transparent  hover:outline-zinc-800 transition-all"
             onClick={() => setActiveInput("beskrivelse")}
           >
-            <IconPlus className="w-4 h-4 mr-1 mb-0.5" /> Beskrivelse
-          </Button>
+            <IconPlus className="w-4 h-4 " />
+            Beskrivelse
+          </button>
         )}
 
         <div className="flex justify-between items-start ">
@@ -217,21 +221,29 @@ export default function ManageVirksomhed({
                   ) : (
                     <IconPlus className="h-4 w-4 mr-1" />
                   )}
-                  {editingVirksomhed && editingVirksomhed.telefonnr
-                    ? parsePhoneNumber(editingVirksomhed.telefonnr)
-                      ? parsePhoneNumber(
-                          editingVirksomhed.telefonnr
-                        ).formatInternational()
-                      : editingVirksomhed.telefonnr
-                    : "Tlf."}
+                  {editingVirksomhed && editingVirksomhed.telefonnr ? (
+                    parsePhoneNumber(editingVirksomhed.telefonnr) ? (
+                      parsePhoneNumber(
+                        editingVirksomhed.telefonnr
+                      ).formatInternational()
+                    ) : (
+                      editingVirksomhed.telefonnr
+                    )
+                  ) : (
+                    <p className=" translate-y-[1px]">Tlf.</p>
+                  )}
                 </Button>
               ) : (
                 <Button variant="outline" className="p-0" size="sm">
                   <PhoneInput
                     value={
-                      editingVirksomhed && editingVirksomhed.telefonnr
-                        ? editingVirksomhed.telefonnr
-                        : ""
+                      editingVirksomhed && editingVirksomhed.telefonnr ? (
+                        <p className=" translate-y-[1px]">
+                          editingVirksomhed.telefonnr
+                        </p>
+                      ) : (
+                        ""
+                      )
                     }
                     placeholder="Tlf."
                     className=" bg-transparent px-0 text-xs w-fit h-full pl-3  placeholder:text-xs ring-0 outline-none active:outline-none focus:outline-none tlf-input"

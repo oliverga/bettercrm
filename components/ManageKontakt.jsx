@@ -134,16 +134,28 @@ export default function ManageKontakt({
           className="max-w-xs"
         />
 
-        <Textarea
-          placeholder="Beskrivelse"
-          value={editingKontakt ? editingKontakt.beskrivelse : ""}
-          onChange={(event) =>
-            setEditingKontakt((prevState) => ({
-              ...prevState,
-              beskrivelse: event.target.value,
-            }))
-          }
-        />
+        {activeInput === "beskrivelse" ||
+        (editingKontakt && editingKontakt.beskrivelse !== null) ? (
+          <Textarea
+            placeholder="Beskrivelse"
+            value={editingKontakt ? editingKontakt.beskrivelse : ""}
+            onChange={(event) =>
+              setEditingVirksomhed((prevState) => ({
+                ...prevState,
+                beskrivelse: event.target.value,
+              }))
+            }
+          />
+        ) : (
+          <button
+            variant="link"
+            className="place-self-start flex gap-1 items-center text-sm py-1 px-2 rounded outline outline-1 outline-transparent  hover:outline-zinc-800 transition-all"
+            onClick={() => setActiveInput("beskrivelse")}
+          >
+            <IconPlus className="w-4 h-4 " />
+            Beskrivelse
+          </button>
+        )}
 
         <div className="flex justify-between items-start ">
           <div className="flex flex-col gap-1 flex-wrap ">
